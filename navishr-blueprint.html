@@ -1,0 +1,981 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The NAVISHR Blueprint</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  /* ============================= TOKENS ============================= */
+  :root{
+    --paper:#F5F7F5;
+    --paper-raised:#FFFFFF;
+    --ink:#16202B;
+    --ink-soft:#4B5A68;
+    --ink-faint:#7C8C99;
+    --line:rgba(30,90,168,.16);
+    --line-strong:rgba(22,32,43,.14);
+    --blue:#1E5AA8;
+    --blue-bright:#1670D6;
+    --amber:#A9600F;
+    --red:#A8392D;
+    --code-bg:#EDF2F6;
+    --shadow:0 1px 2px rgba(22,32,43,.07), 0 8px 24px -18px rgba(22,32,43,.35);
+
+    --font-display:'Big Shoulders Display','Arial Narrow',sans-serif;
+    --font-body:'IBM Plex Sans','Segoe UI',system-ui,sans-serif;
+    --font-mono:'IBM Plex Mono','SFMono-Regular',Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#0E1A27;
+      --paper-raised:#122236;
+      --ink:#E8EEF5;
+      --ink-soft:#A7BACC;
+      --ink-faint:#7891A6;
+      --line:rgba(111,178,240,.18);
+      --line-strong:rgba(232,238,245,.14);
+      --blue:#6FB2F0;
+      --blue-bright:#8FC6FF;
+      --amber:#E3A448;
+      --red:#E8695C;
+      --code-bg:#0C1826;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -18px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#0E1A27;
+    --paper-raised:#122236;
+    --ink:#E8EEF5;
+    --ink-soft:#A7BACC;
+    --ink-faint:#7891A6;
+    --line:rgba(111,178,240,.18);
+    --line-strong:rgba(232,238,245,.14);
+    --blue:#6FB2F0;
+    --blue-bright:#8FC6FF;
+    --amber:#E3A448;
+    --red:#E8695C;
+    --code-bg:#0C1826;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -18px rgba(0,0,0,.6);
+  }
+
+  /* ============================= BASE ============================= */
+  *,*::before,*::after{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      repeating-linear-gradient(0deg, var(--line) 0 1px, transparent 1px 88px),
+      repeating-linear-gradient(90deg, var(--line) 0 1px, transparent 1px 88px),
+      var(--paper);
+    color:var(--ink);
+    font-family:var(--font-body);
+    font-size:16px;
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  @media (prefers-reduced-motion:no-preference){
+    html{scroll-behavior:smooth;}
+  }
+  a{color:var(--blue-bright);}
+  a:focus-visible,button:focus-visible,summary:focus-visible{
+    outline:2px solid var(--blue-bright); outline-offset:2px;
+  }
+  h1,h2,h3{font-family:var(--font-display); font-weight:800; text-wrap:balance; letter-spacing:.01em; margin:0;}
+  code{font-family:var(--font-mono); font-size:.92em; background:var(--code-bg); padding:.1em .4em; border-radius:3px;}
+  .eyebrow{
+    font-family:var(--font-mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--ink-faint);
+  }
+
+  .page{max-width:1360px; margin:0 auto; padding:28px 24px 120px;}
+
+  /* ============================= TITLE BLOCK ============================= */
+  .titleblock{
+    border:1px solid var(--line-strong);
+    background:var(--paper-raised);
+    box-shadow:var(--shadow);
+    display:grid;
+    grid-template-columns: 1.6fr 1fr;
+    overflow:hidden;
+    margin-bottom:40px;
+  }
+  .titleblock .main{padding:36px 40px;}
+  .titleblock h1{font-size:clamp(34px,5vw,58px); line-height:.95; color:var(--ink);}
+  .titleblock .sub{max-width:60ch; margin-top:14px; color:var(--ink-soft); font-size:15.5px;}
+  .titleblock .meta{
+    border-left:1px solid var(--line-strong);
+    display:grid; grid-template-columns:1fr 1fr;
+  }
+  .titleblock .meta div{
+    padding:14px 16px; border-bottom:1px solid var(--line-strong); border-right:1px solid var(--line-strong);
+  }
+  .titleblock .meta div:nth-child(2n){border-right:none;}
+  .titleblock .meta .k{display:block; font-family:var(--font-mono); font-size:10px; letter-spacing:.12em; color:var(--ink-faint); text-transform:uppercase; margin-bottom:4px;}
+  .titleblock .meta .v{font-family:var(--font-mono); font-size:13.5px; color:var(--ink);}
+
+  /* ============================= LAYOUT ============================= */
+  .layout{display:grid; grid-template-columns:230px 1fr; gap:44px; align-items:start;}
+  @media (max-width:900px){ .layout{grid-template-columns:1fr;} }
+
+  .toc{position:sticky; top:24px; font-size:13.5px;}
+  .toc .group{margin-bottom:20px;}
+  .toc .group-h{
+    display:flex; gap:8px; align-items:baseline; font-family:var(--font-mono);
+    font-weight:600; color:var(--blue); font-size:12.5px; letter-spacing:.04em; margin-bottom:6px;
+  }
+  .toc .group-h .letter{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:20px; height:20px; border:1px solid var(--blue); border-radius:3px; font-size:11px;
+  }
+  .toc ul{list-style:none; margin:0; padding:0 0 0 28px; border-left:1px solid var(--line-strong);}
+  .toc li{margin:2px 0;}
+  .toc a{display:block; color:var(--ink-soft); text-decoration:none; padding:3px 0 3px 10px; border-left:2px solid transparent;}
+  .toc a:hover{color:var(--ink); border-left-color:var(--blue);}
+  @media (max-width:900px){ .toc{position:static;} }
+
+  .content section.category{margin-bottom:64px;}
+
+  .category-head{
+    display:flex; align-items:flex-end; gap:18px; margin-bottom:8px;
+  }
+  .category-head .letter{
+    font-family:var(--font-display); font-size:64px; line-height:.8; color:var(--blue);
+  }
+  .category-head h2{font-size:clamp(22px,3vw,32px);}
+  .category-head .count{margin-left:auto; font-family:var(--font-mono); font-size:12px; color:var(--ink-faint); white-space:nowrap;}
+  .ruler{
+    height:10px; margin:10px 0 28px;
+    background-image: repeating-linear-gradient(90deg, var(--ink-faint) 0 1px, transparent 1px 24px);
+    background-position:bottom left; background-repeat:repeat-x; background-size:100% 10px;
+    opacity:.5;
+  }
+  .category-intro{max-width:78ch; color:var(--ink-soft); margin-bottom:28px; font-size:15.5px;}
+
+  /* ============================= CARDS ============================= */
+  .card{
+    position:relative;
+    background:var(--paper-raised);
+    border:1px solid var(--line-strong);
+    border-left:3px solid var(--blue);
+    box-shadow:var(--shadow);
+    border-radius:2px;
+    padding:30px clamp(20px,4vw,40px) 34px;
+    margin-bottom:28px;
+  }
+  .card-head{display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:6px;}
+  .card-head h3{font-size:clamp(20px,2.4vw,26px); color:var(--ink);}
+  .sheet-tag{
+    font-family:var(--font-mono); font-size:11px; color:var(--ink-faint);
+    border:1px solid var(--line-strong); border-radius:3px; padding:3px 8px; white-space:nowrap; margin-top:4px;
+  }
+  .analogy{
+    font-size:15.5px; color:var(--ink-soft); font-style:italic; margin:10px 0 14px;
+    padding-left:14px; border-left:2px solid var(--line-strong);
+  }
+  .card p{margin:10px 0; max-width:74ch;}
+  .card p.tight{max-width:none;}
+
+  figure.diagram{margin:22px 0 8px; padding:18px; background:var(--code-bg); border:1px solid var(--line-strong); border-radius:3px;}
+  figure.diagram svg{width:100%; height:auto; display:block; color:var(--ink-soft);}
+  figure.diagram figcaption{margin-top:10px; font-size:13px; color:var(--ink-faint);}
+
+  .spec{
+    margin-top:18px; padding:14px 16px; background:var(--code-bg); border:1px dashed var(--line-strong); border-radius:3px;
+    font-family:var(--font-mono); font-size:12.5px; color:var(--ink-soft);
+  }
+  .spec .k{color:var(--ink-faint); text-transform:uppercase; letter-spacing:.08em; font-size:10px; display:block; margin-bottom:6px;}
+  .spec a{color:var(--blue); text-decoration:none; border-bottom:1px solid var(--line);}
+  .spec a:hover{border-bottom-color:var(--blue);}
+  .spec div + div{margin-top:4px;}
+
+  .fieldnote{margin-top:14px; font-size:13.5px; color:var(--ink-soft);}
+  .fieldnote .k{font-family:var(--font-mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); margin-right:8px;}
+  .fieldnote a{color:var(--blue-bright);}
+
+  .callout{
+    margin-top:16px; padding:12px 14px; border-radius:3px; font-size:14px;
+    border:1px solid var(--line-strong); background:var(--paper);
+  }
+  .callout.warn{border-color:color-mix(in srgb, var(--amber) 45%, var(--line-strong)); }
+  .callout.warn .eyebrow{color:var(--amber);}
+  .callout.danger{border-color:color-mix(in srgb, var(--red) 45%, var(--line-strong));}
+  .callout.danger .eyebrow{color:var(--red);}
+
+  /* legend */
+  .legend-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; margin-top:18px;}
+  .legend-item{display:flex; gap:12px; align-items:center; font-size:13.5px; color:var(--ink-soft);}
+  .legend-item svg{flex:none; color:var(--ink-soft);}
+
+  /* footer / path */
+  .path{
+    background:var(--paper-raised); border:1px solid var(--line-strong); box-shadow:var(--shadow);
+    padding:32px clamp(20px,4vw,40px); margin-top:20px; border-radius:2px;
+  }
+  .path ol{margin:16px 0 0; padding-left:0; list-style:none; counter-reset:step;}
+  .path li{
+    counter-increment:step; position:relative; padding:10px 0 10px 44px; border-top:1px solid var(--line-strong); font-size:15px;
+  }
+  .path li:first-child{border-top:none;}
+  .path li::before{
+    content: counter(step);
+    position:absolute; left:0; top:10px; width:28px; height:28px; border-radius:50%;
+    border:1px solid var(--blue); color:var(--blue); font-family:var(--font-mono); font-size:12.5px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .path li b{font-weight:600; color:var(--ink);}
+
+  .resources{margin-top:20px;}
+  .resources ul{margin:10px 0 0; padding-left:20px;}
+  .resources li{margin:6px 0; font-size:14.5px;}
+
+  footer.colophon{
+    margin-top:56px; padding-top:20px; border-top:1px solid var(--line-strong);
+    font-family:var(--font-mono); font-size:11.5px; color:var(--ink-faint); text-align:center;
+  }
+
+  .back-to-top{
+    display:inline-block; margin-top:10px; font-family:var(--font-mono); font-size:11.5px; color:var(--ink-faint); text-decoration:none;
+  }
+  .back-to-top:hover{color:var(--blue);}
+
+  .wide-scroll{overflow-x:auto;}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="titleblock">
+    <div class="main">
+      <span class="eyebrow">Field guide · internal systems</span>
+      <h1>The NAVISHR<br>Blueprint</h1>
+      <p class="sub">Nineteen concepts that quietly run the PMS platform — how a request finds its tenant, proves who it is, gets watched, and gets answered. Written for the version of you that hasn't seen this plumbing before.</p>
+    </div>
+    <div class="meta">
+      <div><span class="k">Subject</span><span class="v">backend/ + NAVISHR-Dashboard/</span></div>
+      <div><span class="k">Revision</span><span class="v">2026-08-25</span></div>
+      <div><span class="k">Sheets</span><span class="v">19, in 7 categories</span></div>
+      <div><span class="k">Scale</span><span class="v">1 request : 1 diagram</span></div>
+    </div>
+  </div>
+
+  <div class="layout">
+
+    <!-- ===================== TOC ===================== -->
+    <nav class="toc" aria-label="Table of contents">
+      <div class="group">
+        <div class="group-h"><span class="letter">◆</span> Legend</div>
+        <ul><li><a href="#legend">How to read a sheet</a></li></ul>
+      </div>
+      <div class="group">
+        <div class="group-h"><span class="letter">A</span> Multi-tenancy</div>
+        <ul>
+          <li><a href="#c01">01 Subdomain resolution</a></li>
+          <li><a href="#c02">02 x-tenant-id override</a></li>
+          <li><a href="#c03">03 Tenant boundary check</a></li>
+          <li><a href="#c04">04 Row-level isolation</a></li>
+          <li><a href="#c05">05 Tenant suspension</a></li>
+        </ul>
+      </div>
+      <div class="group">
+        <div class="group-h"><span class="letter">B</span> AuthN / AuthZ</div>
+        <ul>
+          <li><a href="#c06">06 JWT + refresh tokens</a></li>
+          <li><a href="#c07">07 RBAC + overrides</a></li>
+          <li><a href="#c08">08 Module gating</a></li>
+          <li><a href="#c09">09 Super Admin</a></li>
+        </ul>
+      </div>
+      <div class="group">
+        <div class="group-h"><span class="letter">C</span> Observability</div>
+        <ul>
+          <li><a href="#c10">10 Trace / correlation ID</a></li>
+          <li><a href="#c11">11 Structured logging</a></li>
+          <li><a href="#c12">12 Request logging</a></li>
+        </ul>
+      </div>
+      <div class="group">
+        <div class="group-h"><span class="letter">D</span> API plumbing</div>
+        <ul>
+          <li><a href="#c13">13 Exception filters</a></li>
+          <li><a href="#c14">14 Response envelope</a></li>
+          <li><a href="#c15">15 DTO validation</a></li>
+          <li><a href="#c16">16 Swagger / Helmet / CORS</a></li>
+        </ul>
+      </div>
+      <div class="group">
+        <div class="group-h"><span class="letter">E</span> Storage</div>
+        <ul><li><a href="#c17">17 Presigned S3 URLs</a></li></ul>
+      </div>
+      <div class="group">
+        <div class="group-h"><span class="letter">F</span> Domain pattern</div>
+        <ul><li><a href="#c18">18 Freeze / lock</a></li></ul>
+      </div>
+      <div class="group">
+        <div class="group-h"><span class="letter">G</span> Frontend</div>
+        <ul><li><a href="#c19">19 Axios interceptors</a></li></ul>
+      </div>
+      <div class="group">
+        <ul><li><a href="#path">Suggested reading order →</a></li></ul>
+      </div>
+    </nav>
+
+    <!-- ===================== CONTENT ===================== -->
+    <div class="content">
+
+      <!-- LEGEND -->
+      <section class="category" id="legend">
+        <div class="category-head"><span class="letter">◆</span><h2>How to read a sheet</h2><span class="count">sheet 00</span></div>
+        <div class="ruler"></div>
+        <div class="card" style="border-left-color:var(--ink-soft)">
+          <p>Every concept below follows the same shape: a plain-English analogy first, then what the code actually does, then — where a request moves through several steps — a diagram of that exact mechanism, with a pointer to the real file. The diagrams share one drawing language:</p>
+          <div class="legend-grid">
+            <div class="legend-item">
+              <svg width="60" height="30" viewBox="0 0 60 30" role="img" aria-label="A solid box represents a component or a step"><rect x="4" y="4" width="52" height="22" fill="none" stroke="currentColor" stroke-width="1.5" rx="2"/></svg>
+              a component or step
+            </div>
+            <div class="legend-item">
+              <svg width="60" height="30" viewBox="0 0 60 30" role="img" aria-label="A diamond represents a decision point"><polygon points="30,3 56,15 30,27 4,15" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+              a decision point
+            </div>
+            <div class="legend-item">
+              <svg width="60" height="20" viewBox="0 0 60 20" role="img" aria-label="A solid arrow is the path a request actually takes"><defs><marker id="lg1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs><line x1="4" y1="10" x2="52" y2="10" stroke="currentColor" stroke-width="1.5" marker-end="url(#lg1)"/></svg>
+              the path taken
+            </div>
+            <div class="legend-item">
+              <svg width="60" height="20" viewBox="0 0 60 20" role="img" aria-label="A dashed arrow is a bypass or fallback path"><defs><marker id="lg2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs><line x1="4" y1="10" x2="52" y2="10" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#lg2)"/></svg>
+              a bypass / fallback
+            </div>
+            <div class="legend-item">
+              <svg width="30" height="24" viewBox="0 0 30 24" role="img" aria-label="A red-stroked box is a rejection"><rect x="3" y="3" width="24" height="18" fill="none" stroke="var(--red)" stroke-width="1.5" rx="2"/></svg>
+              rejected / denied
+            </div>
+            <div class="legend-item">
+              <svg width="30" height="24" viewBox="0 0 30 24" role="img" aria-label="A blue-stroked box is the accepted outcome"><rect x="3" y="3" width="24" height="18" fill="none" stroke="var(--blue-bright)" stroke-width="2" rx="2"/></svg>
+              accepted / allowed
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- CATEGORY A -->
+      <!-- ============================================================ -->
+      <section class="category" id="cat-a">
+        <div class="category-head"><span class="letter">A</span><h2>Multi-tenancy</h2><span class="count">sheets 01–05</span></div>
+        <div class="ruler"></div>
+        <p class="category-intro">NAVISHR runs one codebase and one database for every customer ("tenant") — Wipro's data and Infosys's data sit in the same tables. Everything in this category exists to answer one question correctly, every single time: <em>whose request is this, and is it only touching what it's allowed to touch?</em></p>
+
+        <!-- 01 -->
+        <article class="card" id="c01">
+          <div class="card-head"><h3>Subdomain resolution</h3><span class="sheet-tag">01 / 19</span></div>
+          <p class="analogy">Think of the platform as one large office building. Every tenant gets their own floor. The subdomain — <code>wipro.navishr.com</code> — is what's printed on the directory board in the lobby: it tells the elevator which floor to send you to before you've shown any ID.</p>
+          <p>On every incoming request, middleware reads the hostname, strips the shared base domain (<code>navishr.com</code>), and treats whatever's left as the tenant's slug. A handful of names — <code>www</code>, <code>api</code>, <code>admin</code>, <code>system</code> — are reserved and never resolve to a real tenant, so the marketing site or the bare API host can never accidentally be treated as someone's floor.</p>
+
+          <figure class="diagram">
+            <svg viewBox="0 0 900 300" role="img" aria-label="A request's hostname is checked for an explicit x-tenant-id header first; if absent, the subdomain is extracted from the host and looked up against the tenant table to set req.tenantId.">
+              <defs>
+                <marker id="a1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+              </defs>
+              <rect x="20" y="120" width="160" height="60" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <text x="100" y="146" text-anchor="middle" font-family="IBM Plex Mono" font-size="12">Incoming request</text>
+              <text x="100" y="163" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5" fill="currentColor" opacity=".7">Host: wipro.navishr.com</text>
+              <line x1="180" y1="150" x2="228" y2="150" stroke="currentColor" stroke-width="1.5" marker-end="url(#a1)"/>
+
+              <polygon points="320,95 400,150 320,205 240,150" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <text x="320" y="146" text-anchor="middle" font-family="IBM Plex Mono" font-size="11">x-tenant-id</text>
+              <text x="320" y="160" text-anchor="middle" font-family="IBM Plex Mono" font-size="11">header set?</text>
+
+              <line x1="320" y1="95" x2="320" y2="45" stroke="currentColor" stroke-width="1.5"/>
+              <line x1="320" y1="45" x2="480" y2="45" stroke="currentColor" stroke-width="1.5" marker-end="url(#a1)"/>
+              <text x="400" y="36" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5">yes</text>
+              <rect x="480" y="18" width="240" height="54" rx="2" fill="none" stroke="var(--blue-bright)" stroke-width="2"/>
+              <text x="600" y="40" text-anchor="middle" font-family="IBM Plex Mono" font-size="11.5">req.tenantId = header value</text>
+              <text x="600" y="56" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" opacity=".7">wins outright — no lookup</text>
+
+              <line x1="400" y1="150" x2="480" y2="150" stroke="currentColor" stroke-width="1.5" marker-end="url(#a1)"/>
+              <text x="440" y="141" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5">no</text>
+              <rect x="480" y="123" width="240" height="54" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <text x="600" y="145" text-anchor="middle" font-family="IBM Plex Mono" font-size="11.5">extractSubdomain(hostname)</text>
+              <text x="600" y="161" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" opacity=".7">→ "wipro"</text>
+
+              <line x1="600" y1="177" x2="600" y2="223" stroke="currentColor" stroke-width="1.5" marker-end="url(#a1)"/>
+              <rect x="480" y="223" width="240" height="54" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <text x="600" y="245" text-anchor="middle" font-family="IBM Plex Mono" font-size="11.5">tenantService.findBySubdomain()</text>
+              <text x="600" y="261" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" opacity=".7">DB lookup by slug</text>
+
+              <line x1="720" y1="250" x2="800" y2="250" stroke="currentColor" stroke-width="1.5"/>
+              <line x1="800" y1="250" x2="800" y2="55" stroke="currentColor" stroke-width="1.5"/>
+              <line x1="720" y1="45" x2="800" y2="45" stroke="currentColor" stroke-width="1.5" marker-end="url(#a1)"/>
+              <line x1="800" y1="55" x2="800" y2="45" stroke="currentColor" stroke-width="1.5"/>
+              <text x="845" y="150" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" transform="rotate(90 845 150)">both feed the same setter</text>
+            </svg>
+            <figcaption>An explicit header always short-circuits the subdomain lookup — used by dev tooling and Super Admin impersonation. Everyone else is resolved from the URL they actually hit.</figcaption>
+          </figure>
+
+          <div class="spec">
+            <span class="k">Where</span>
+            <div><a href="backend/src/common/middleware/tenant.middleware.ts">common/middleware/tenant.middleware.ts</a></div>
+            <div><a href="backend/src/common/utils/subdomain.util.ts">common/utils/subdomain.util.ts</a> — the extraction + reserved-name logic</div>
+          </div>
+          <div class="fieldnote"><span class="k">Read next</span><a href="https://docs.aws.amazon.com/wellarchitected/latest/saas-lens/tenant-isolation.html" target="_blank" rel="noopener">AWS SaaS Lens — Tenant Isolation Patterns</a></div>
+        </article>
+
+        <!-- 02 -->
+        <article class="card" id="c02">
+          <div class="card-head"><h3>The x-tenant-id override</h3><span class="sheet-tag">02 / 19</span></div>
+          <p class="analogy">A subdomain is the door number you walked up to. <code>x-tenant-id</code> is a master keycard — it opens a specific floor regardless of which door you're standing at, which is exactly what a building superintendent (Super Admin) needs.</p>
+          <p>Once logged in, the frontend itself sends this header on every request — the tenant ID from the logged-in user's session always wins over re-deriving it from the URL. The same header is also how a Super Admin impersonates a tenant to debug an issue without logging in as that org.</p>
+          <div class="spec">
+            <span class="k">Where</span>
+            <div><a href="backend/src/common/middleware/tenant.middleware.ts">common/middleware/tenant.middleware.ts:15-22</a> — header wins over subdomain</div>
+            <div><a href="NAVISHR-Dashboard/src/http/httpClient.ts">NAVISHR-Dashboard/src/http/httpClient.ts:36-40</a> — frontend attaching it</div>
+          </div>
+        </article>
+
+        <!-- 03 -->
+        <article class="card" id="c03">
+          <div class="card-head"><h3>Tenant boundary enforcement</h3><span class="sheet-tag">03 / 19</span></div>
+          <p class="analogy">Even with a keycard, a good front desk double-checks the badge photo matches the floor you're requesting. Resolving a tenant is not the same as being <em>allowed</em> into it.</p>
+          <p>A non-Super-Admin who sends an <code>x-tenant-id</code> that doesn't match the tenant baked into their own JWT gets an immediate 403 — before any permission logic even runs. This closes the obvious hole where the header-override convenience from sheet 02 could otherwise be used by any logged-in user to peek at another tenant's data.</p>
+          <div class="spec">
+            <span class="k">Where</span>
+            <div><a href="backend/src/common/guards/permissions.guard.ts">common/guards/permissions.guard.ts:74-84</a></div>
+          </div>
+        </article>
+
+        <!-- 04 -->
+        <article class="card" id="c04">
+          <div class="card-head"><h3>Row-level isolation</h3><span class="sheet-tag">04 / 19</span></div>
+          <p class="analogy">Picture a librarian who, no matter what title you ask for, only ever hands you a book stamped with your own library card's branch code — versus a librarian who hands you whatever's on the shelf and trusts you to check the stamp yourself before reading it.</p>
+          <p>The second librarian is what a raw TypeORM repository is: nothing stops a service from writing <code>repo.findOne({ where: { id } })</code> and forgetting <code>tenantId</code> entirely — and that's already happened once in this codebase. <code>TenantScopedRepository</code> is the first librarian: it wraps the repository so every read merges <code>tenantId</code> into the query automatically, and every write stamps it on the way in. There's no method on the wrapper that can build a query without it.</p>
+
+          <figure class="diagram">
+            <svg viewBox="0 0 900 380" role="img" aria-label="Comparison: a raw repository query with no tenant filter can return another tenant's row, while TenantScopedRepository injects tenantId into the WHERE clause automatically so only the caller's own tenant's row can come back.">
+              <defs><marker id="a2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+
+              <text x="215" y="24" text-anchor="middle" font-family="IBM Plex Mono" font-size="12" font-weight="600" fill="var(--red)">@InjectRepository(Task)</text>
+              <rect x="115" y="42" width="200" height="46" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <text x="215" y="70" text-anchor="middle" font-family="IBM Plex Mono" font-size="11.5">tasksService</text>
+              <line x1="215" y1="88" x2="215" y2="126" stroke="currentColor" stroke-width="1.5" marker-end="url(#a2)"/>
+              <rect x="115" y="126" width="200" height="46" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <text x="215" y="154" text-anchor="middle" font-family="IBM Plex Mono" font-size="11">repo.findOne({ id })</text>
+              <line x1="215" y1="172" x2="215" y2="210" stroke="currentColor" stroke-width="1.5" marker-end="url(#a2)"/>
+              <rect x="95" y="210" width="240" height="54" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <text x="215" y="232" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5">SELECT * FROM task</text>
+              <text x="215" y="248" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5">WHERE id = $1</text>
+              <line x1="215" y1="264" x2="215" y2="302" stroke="currentColor" stroke-width="1.5" marker-end="url(#a2)"/>
+              <rect x="95" y="302" width="240" height="50" rx="2" fill="none" stroke="var(--red)" stroke-width="1.8"/>
+              <text x="215" y="331" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="var(--red)">⚠ any tenant's row</text>
+
+              <line x1="450" y1="0" x2="450" y2="380" stroke="currentColor" stroke-width="1" stroke-dasharray="3 5" opacity=".4"/>
+
+              <text x="685" y="24" text-anchor="middle" font-family="IBM Plex Mono" font-size="12" font-weight="600" fill="var(--blue-bright)">TenantScopedRepository</text>
+              <rect x="585" y="42" width="200" height="46" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <text x="685" y="70" text-anchor="middle" font-family="IBM Plex Mono" font-size="11.5">tasksService</text>
+              <line x1="685" y1="88" x2="685" y2="126" stroke="currentColor" stroke-width="1.5" marker-end="url(#a2)"/>
+              <rect x="585" y="126" width="200" height="46" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <text x="685" y="154" text-anchor="middle" font-family="IBM Plex Mono" font-size="11">repo.findOne({ id })</text>
+              <line x1="685" y1="172" x2="685" y2="196" stroke="currentColor" stroke-width="1.5" marker-end="url(#a2)"/>
+              <text x="685" y="192" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="var(--blue-bright)">+ tenantId merged in</text>
+              <line x1="685" y1="196" x2="685" y2="210" stroke="currentColor" stroke-width="1.5" marker-end="url(#a2)"/>
+              <rect x="565" y="210" width="240" height="54" rx="2" fill="none" stroke="var(--blue-bright)" stroke-width="1.8"/>
+              <text x="685" y="232" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5">SELECT * FROM task</text>
+              <text x="685" y="248" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5" fill="var(--blue-bright)">WHERE id=$1 AND tenant_id=$2</text>
+              <line x1="685" y1="264" x2="685" y2="302" stroke="currentColor" stroke-width="1.5" marker-end="url(#a2)"/>
+              <rect x="565" y="302" width="240" height="50" rx="2" fill="none" stroke="var(--blue-bright)" stroke-width="1.8"/>
+              <text x="685" y="331" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="var(--blue-bright)">only this tenant's row</text>
+            </svg>
+            <figcaption>Same call site, same one-line query — the wrapper is the only difference between "trusts every developer to remember" and "structurally cannot forget."</figcaption>
+          </figure>
+
+          <div class="callout warn">
+            <span class="eyebrow">Rollout status</span>
+            Not every module has been migrated to the scoped repository yet — see your <code>pms-tenant-audit-progress</code> notes: Placement and Tasks-attachments are done, Performance is paused pending a rebuild, Assessment is waiting on another team.
+          </div>
+
+          <div class="spec">
+            <span class="k">Where</span>
+            <div><a href="backend/src/common/repositories/tenant-scoped.repository.ts">common/repositories/tenant-scoped.repository.ts</a></div>
+          </div>
+          <div class="fieldnote"><span class="k">Read next</span><a href="https://owasp.org/www-community/Insecure_Direct_Object_Reference" target="_blank" rel="noopener">OWASP — Insecure Direct Object Reference</a></div>
+        </article>
+
+        <!-- 05 -->
+        <article class="card" id="c05">
+          <div class="card-head"><h3>Tenant suspension</h3><span class="sheet-tag">05 / 19</span></div>
+          <p class="analogy">A company ID badge that's deactivated at security the instant HR suspends someone — not one that quietly still works until the next time they happen to clock in.</p>
+          <p><code>tenant.active</code> is checked on <em>every</em> authenticated request, inside the JWT validation step itself — not just at login. The moment a Super Admin suspends an org, its users' next API call anywhere in the app gets a 401 with a specific message, which the frontend recognizes and turns into an immediate, forced logout rather than trying (and failing) to silently refresh the token.</p>
+          <div class="spec">
+            <span class="k">Where</span>
+            <div><a href="backend/src/auth/jwt.strategy.ts">auth/jwt.strategy.ts:40-44</a> — the check, on every request</div>
+            <div><a href="NAVISHR-Dashboard/src/http/httpClient.ts">NAVISHR-Dashboard/src/http/httpClient.ts:107-114</a> — the frontend reacting to it</div>
+          </div>
+        </article>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- CATEGORY B -->
+      <!-- ============================================================ -->
+      <section class="category" id="cat-b">
+        <div class="category-head"><span class="letter">B</span><h2>AuthN / AuthZ</h2><span class="count">sheets 06–09</span></div>
+        <div class="ruler"></div>
+        <p class="category-intro">Authentication ("who are you") and authorization ("what are you allowed to do") are two different jobs that get confused constantly. NAVISHR keeps them as two separate stages a request passes through, in a fixed order, so a fix to one can never accidentally weaken the other.</p>
+
+        <!-- 06 -->
+        <article class="card" id="c06">
+          <div class="card-head"><h3>JWT access + refresh tokens</h3><span class="sheet-tag">06 / 19</span></div>
+          <p class="analogy">The access token is a festival wristband: the gate stamps it once, and every other checkpoint inside can verify it just by looking — nobody needs to call the ticket office back. It's cheap to check but deliberately short-lived. The refresh token is your ticket stub: worthless for getting past a checkpoint, but exchangeable at the office for a brand new wristband without buying a new ticket.</p>
+          <p>Login returns both. Every request after that carries the access token in <code>Authorization: Bearer …</code>. When it expires, the axios client doesn't bother the user — it silently trades the refresh token for a new access token, replays the failed request, and even <em>queues</em> any other requests that failed at the same moment so they don't all race to refresh independently.</p>
+
+          <figure class="diagram">
+            <svg viewBox="0 0 820 560" role="img" aria-label="Sequence diagram: client logs in and receives an access and refresh token; requests carry the access token until it expires; a 401 triggers a refresh call that exchanges the refresh token for a new access token, and the original request is retried.">
+              <defs><marker id="a3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+
+              <line x1="140" y1="30" x2="140" y2="530" stroke="currentColor" stroke-width="1" opacity=".35"/>
+              <line x1="680" y1="30" x2="680" y2="530" stroke="currentColor" stroke-width="1" opacity=".35"/>
+              <rect x="60" y="4" width="160" height="30" fill="none" stroke="currentColor" stroke-width="1.3"/>
+              <text x="140" y="24" text-anchor="middle" font-family="IBM Plex Mono" font-size="11.5">Client (axios)</text>
+              <rect x="600" y="4" width="160" height="30" fill="none" stroke="currentColor" stroke-width="1.3"/>
+              <text x="680" y="24" text-anchor="middle" font-family="IBM Plex Mono" font-size="11.5">Server (NestJS)</text>
+
+              <line x1="140" y1="60" x2="680" y2="60" stroke="currentColor" stroke-width="1.4" marker-end="url(#a3)"/>
+              <text x="410" y="52" text-anchor="middle" font-family="IBM Plex Mono" font-size="11">POST /auth/login { email, password }</text>
+
+              <line x1="680" y1="100" x2="140" y2="100" stroke="currentColor" stroke-width="1.4" marker-end="url(#a3)"/>
+              <text x="410" y="92" text-anchor="middle" font-family="IBM Plex Mono" font-size="11">{ accessToken, refreshToken }</text>
+
+              <line x1="140" y1="150" x2="680" y2="150" stroke="currentColor" stroke-width="1.4" marker-end="url(#a3)"/>
+              <text x="410" y="142" text-anchor="middle" font-family="IBM Plex Mono" font-size="11">GET /tasks · Bearer accessToken</text>
+              <line x1="680" y1="188" x2="140" y2="188" stroke="currentColor" stroke-width="1.4" marker-end="url(#a3)"/>
+              <text x="410" y="180" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="var(--blue-bright)">200 OK</text>
+
+              <line x1="60" y1="222" x2="760" y2="222" stroke="currentColor" stroke-width="1" stroke-dasharray="2 5" opacity=".5"/>
+              <text x="410" y="216" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" opacity=".7">⏱ access token expires</text>
+
+              <line x1="140" y1="262" x2="680" y2="262" stroke="currentColor" stroke-width="1.4" marker-end="url(#a3)"/>
+              <text x="410" y="254" text-anchor="middle" font-family="IBM Plex Mono" font-size="11">GET /tasks · Bearer (expired)</text>
+              <line x1="680" y1="300" x2="140" y2="300" stroke="var(--red)" stroke-width="1.4" marker-end="url(#a3)"/>
+              <text x="410" y="292" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="var(--red)">401 Unauthorized</text>
+
+              <line x1="140" y1="350" x2="680" y2="350" stroke="currentColor" stroke-width="1.4" marker-end="url(#a3)"/>
+              <text x="410" y="342" text-anchor="middle" font-family="IBM Plex Mono" font-size="11">POST /auth/refresh { refreshToken }</text>
+              <line x1="680" y1="388" x2="140" y2="388" stroke="currentColor" stroke-width="1.4" marker-end="url(#a3)"/>
+              <text x="410" y="380" text-anchor="middle" font-family="IBM Plex Mono" font-size="11">{ new accessToken }</text>
+
+              <line x1="140" y1="438" x2="680" y2="438" stroke="var(--blue-bright)" stroke-width="1.6" marker-end="url(#a3)"/>
+              <text x="410" y="430" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="var(--blue-bright)">retries GET /tasks (+ any queued requests)</text>
+              <line x1="680" y1="478" x2="140" y2="478" stroke="var(--blue-bright)" stroke-width="1.6" marker-end="url(#a3)"/>
+              <text x="410" y="470" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="var(--blue-bright)">200 OK</text>
+
+              <text x="410" y="514" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5" opacity=".65">the user never saw the 401 — the app just kept working</text>
+            </svg>
+            <figcaption>The 401 → refresh → retry cycle is invisible to the user; only a dead refresh token (or a suspended tenant) ends the session.</figcaption>
+          </figure>
+
+          <div class="spec">
+            <span class="k">Where</span>
+            <div><a href="backend/src/auth/jwt.strategy.ts">auth/jwt.strategy.ts</a>, <a href="backend/src/auth/jwt-auth.guard.ts">auth/jwt-auth.guard.ts</a></div>
+            <div><a href="NAVISHR-Dashboard/src/http/httpClient.ts">NAVISHR-Dashboard/src/http/httpClient.ts:116-129</a> — the request queue during refresh</div>
+          </div>
+          <div class="fieldnote"><span class="k">Read next</span><a href="https://jwt.io/introduction" target="_blank" rel="noopener">jwt.io — Introduction to JSON Web Tokens</a> · <a href="https://auth0.com/docs/secure/tokens/refresh-tokens/refresh-token-rotation" target="_blank" rel="noopener">Auth0 — Refresh Token Rotation</a></div>
+        </article>
+
+        <!-- 07 -->
+        <article class="card" id="c07">
+          <div class="card-head"><h3>RBAC + per-user overrides</h3><span class="sheet-tag">07 / 19</span></div>
+          <p class="analogy">Your job title hands you a default toolbox — that's Role-Based Access Control. A manager who hands you one extra tool, or takes one away, without changing your title on the org chart, is the per-user override layered on top.</p>
+          <p>Each user has a <code>role</code>, and each role has a list of <code>permissions</code> (strings like <code>tasks:task:create</code>). <code>UserPermissionService</code> then computes that user's <em>effective</em> permissions — role permissions plus or minus any individual grants/revokes — once per login, and that computed list rides inside the JWT payload so every later request checks it without hitting the database again.</p>
+          <div class="spec">
+            <span class="k">Where</span>
+            <div><a href="backend/src/auth/jwt.strategy.ts">auth/jwt.strategy.ts:46-52</a> — effective permissions computed at login</div>
+            <div><a href="backend/src/common/guards/permissions.guard.ts">common/guards/permissions.guard.ts</a>, <a href="backend/src/common/decorators/permissions.decorator.ts">common/decorators/permissions.decorator.ts</a> — <code>@Permissions('tasks:task:create')</code></div>
+          </div>
+          <div class="fieldnote"><span class="k">Read next</span><a href="https://csrc.nist.gov/projects/role-based-access-control" target="_blank" rel="noopener">NIST — Role-Based Access Control</a></div>
+        </article>
+
+        <!-- 08 -->
+        <article class="card" id="c08">
+          <div class="card-head"><h3>Tenant module gating</h3><span class="sheet-tag">08 / 19</span></div>
+          <p class="analogy">A cable package. Your household plan might not include the sports channel at all — it doesn't matter that you, personally, know how to work the remote. RBAC decides what a <em>role</em> can do; module gating decides what a <em>tenant</em> has even paid for.</p>
+          <p>Each tenant carries a <code>modules</code> flag set — <code>taskManager</code>, <code>placement</code>, <code>performance</code>, <code>assessment</code>, and so on. The permission guard maps a required permission's namespace (<code>placement:…</code>, <code>tasks:…</code>) to the module it belongs to, and rejects the request outright if that module is explicitly switched off — even for a role that would otherwise be granted it. A module that's simply undefined (added after a tenant was created) defaults to <em>allowed</em>, specifically so shipping a new module never silently breaks an existing tenant.</p>
+
+          <figure class="diagram">
+            <svg viewBox="0 0 720 780" role="img" aria-label="The full gate a request passes through: JwtAuthGuard checks the token, then the tenant boundary is checked, then a Super Admin bypass can skip straight to allowed, otherwise the tenant's module flag is checked, then role or dynamic-bypass permission, before the handler finally runs.">
+              <defs><marker id="a4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+
+              <rect x="120" y="10" width="260" height="50" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <text x="250" y="40" text-anchor="middle" font-family="IBM Plex Mono" font-size="11.5">Request + Bearer JWT</text>
+
+              <line x1="250" y1="60" x2="250" y2="98" stroke="currentColor" stroke-width="1.5" marker-end="url(#a4)"/>
+              <rect x="110" y="98" width="280" height="56" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <text x="250" y="122" text-anchor="middle" font-family="IBM Plex Mono" font-size="11">JwtAuthGuard</text>
+              <text x="250" y="138" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" opacity=".7">valid, unexpired token?</text>
+              <line x1="390" y1="126" x2="480" y2="126" stroke="var(--red)" stroke-width="1.4" marker-end="url(#a4)"/>
+              <text x="435" y="118" text-anchor="middle" font-family="IBM Plex Mono" font-size="9.5">no</text>
+              <rect x="480" y="99" width="200" height="52" rx="2" fill="none" stroke="var(--red)" stroke-width="1.6"/>
+              <text x="580" y="129" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="var(--red)">401 Unauthorized</text>
+
+              <line x1="250" y1="154" x2="250" y2="192" stroke="currentColor" stroke-width="1.5" marker-end="url(#a4)"/>
+              <rect x="110" y="192" width="280" height="56" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <text x="250" y="214" text-anchor="middle" font-family="IBM Plex Mono" font-size="11">Tenant boundary check</text>
+              <text x="250" y="230" text-anchor="middle" font-family="IBM Plex Mono" font-size="9.5" opacity=".7">x-tenant-id matches user.tenantId?</text>
+              <line x1="390" y1="220" x2="480" y2="220" stroke="var(--red)" stroke-width="1.4" marker-end="url(#a4)"/>
+              <text x="435" y="212" text-anchor="middle" font-family="IBM Plex Mono" font-size="9.5">no</text>
+              <rect x="480" y="193" width="200" height="52" rx="2" fill="none" stroke="var(--red)" stroke-width="1.6"/>
+              <text x="580" y="215" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5" fill="var(--red)">403 cross-tenant</text>
+              <text x="580" y="231" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5" fill="var(--red)">access denied</text>
+
+              <line x1="250" y1="248" x2="250" y2="286" stroke="currentColor" stroke-width="1.5" marker-end="url(#a4)"/>
+              <polygon points="250,286 320,318 250,350 180,318" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <text x="250" y="314" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5">Super</text>
+              <text x="250" y="328" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5">Admin?</text>
+
+              <line x1="250" y1="350" x2="250" y2="388" stroke="currentColor" stroke-width="1.5" marker-end="url(#a4)"/>
+              <text x="270" y="378" font-family="IBM Plex Mono" font-size="9.5">no</text>
+              <rect x="110" y="388" width="280" height="56" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <text x="250" y="410" text-anchor="middle" font-family="IBM Plex Mono" font-size="11">Module enabled for tenant?</text>
+              <text x="250" y="426" text-anchor="middle" font-family="IBM Plex Mono" font-size="9.5" opacity=".7">e.g. tenant.modules.placement</text>
+              <line x1="390" y1="416" x2="480" y2="416" stroke="var(--red)" stroke-width="1.4" marker-end="url(#a4)"/>
+              <text x="435" y="408" text-anchor="middle" font-family="IBM Plex Mono" font-size="9.5">no</text>
+              <rect x="480" y="389" width="200" height="52" rx="2" fill="none" stroke="var(--red)" stroke-width="1.6"/>
+              <text x="580" y="411" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5" fill="var(--red)">403 module not</text>
+              <text x="580" y="427" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5" fill="var(--red)">enabled</text>
+
+              <line x1="250" y1="444" x2="250" y2="482" stroke="currentColor" stroke-width="1.5" marker-end="url(#a4)"/>
+              <rect x="90" y="482" width="320" height="66" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <text x="250" y="504" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5">Role/user has permission — OR —</text>
+              <text x="250" y="519" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5">creator / project leader / self bypass</text>
+              <line x1="410" y1="512" x2="480" y2="512" stroke="var(--red)" stroke-width="1.4" marker-end="url(#a4)"/>
+              <text x="445" y="504" text-anchor="middle" font-family="IBM Plex Mono" font-size="9.5">no</text>
+              <rect x="480" y="486" width="200" height="52" rx="2" fill="none" stroke="var(--red)" stroke-width="1.6"/>
+              <text x="580" y="508" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5" fill="var(--red)">403 permission</text>
+              <text x="580" y="524" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5" fill="var(--red)">denied</text>
+
+              <line x1="250" y1="548" x2="250" y2="590" stroke="currentColor" stroke-width="1.6" marker-end="url(#a4)"/>
+              <rect x="110" y="590" width="280" height="56" rx="2" fill="none" stroke="var(--blue-bright)" stroke-width="2"/>
+              <text x="250" y="623" text-anchor="middle" font-family="IBM Plex Mono" font-size="12" fill="var(--blue-bright)">Allowed → handler runs</text>
+
+              <path d="M 320,318 C 520,318 520,590 392,608" fill="none" stroke="var(--blue-bright)" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#a4)"/>
+              <text x="520" y="308" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="var(--blue-bright)">yes — bypasses module gate</text>
+              <text x="520" y="322" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="var(--blue-bright)">and permission check entirely</text>
+            </svg>
+            <figcaption>Order is deliberate: the module gate sits <em>before</em> the creator/leader/self bypasses, so none of those bypasses can be used to route around a module the tenant has switched off.</figcaption>
+          </figure>
+
+          <div class="spec">
+            <span class="k">Where</span>
+            <div><a href="backend/src/tenant/entities/tenant.entity.ts">tenant/entities/tenant.entity.ts:9-30</a> — the <code>TenantModules</code> shape</div>
+            <div><a href="backend/src/common/guards/permissions.guard.ts">common/guards/permissions.guard.ts:23-111</a> — the gate itself</div>
+          </div>
+          <div class="fieldnote"><span class="k">Read next</span><a href="https://martinfowler.com/articles/feature-toggles.html" target="_blank" rel="noopener">Martin Fowler — Feature Toggles</a></div>
+        </article>
+
+        <!-- 09 -->
+        <article class="card" id="c09">
+          <div class="card-head"><h3>Super Admin / the system tenant</h3><span class="sheet-tag">09 / 19</span></div>
+          <p class="analogy">The building superintendent isn't a resident of any one floor — they carry a master key that works everywhere, precisely because their job is managing the building, not living in an apartment.</p>
+          <p>Super Admins live in a special <code>system</code> tenant, bypass the ordinary permission checks entirely, and are the only ones exempt from the tenant boundary check in sheet 03 — that's how impersonation via <code>x-tenant-id</code> is allowed at all. Platform-only actions (creating tenants, suspending one) go through a separate guard, since there's no single tenant to scope those to.</p>
+          <div class="spec">
+            <span class="k">Where</span>
+            <div><a href="backend/src/common/guards/super-admin.guard.ts">common/guards/super-admin.guard.ts</a></div>
+            <div><a href="backend/src/auth/jwt.strategy.ts">auth/jwt.strategy.ts:59</a> — <code>isSystemTenant</code> flag</div>
+          </div>
+        </article>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- CATEGORY C -->
+      <!-- ============================================================ -->
+      <section class="category" id="cat-c">
+        <div class="category-head"><span class="letter">C</span><h2>Observability</h2><span class="count">sheets 10–12</span></div>
+        <div class="ruler"></div>
+        <p class="category-intro">When something goes wrong in production, you weren't standing there watching it happen — the logs are the only witness. This category is about making sure that witness can actually answer "what happened to <em>this specific request</em>," not just "something happened, at some point, to someone."</p>
+
+        <!-- 10 -->
+        <article class="card" id="c10">
+          <div class="card-head"><h3>Trace / correlation ID</h3><span class="sheet-tag">10 / 19</span></div>
+          <p class="analogy">A claim-check ticket, stapled invisibly to your coat as it passes through the cloakroom, the tailor, and back to the front desk. Nobody carrying your coat had to be told its ticket number by hand — it just travels with the coat. If you call back later with a complaint, that ticket number is how every department finds their own notes about your coat, and only your coat.</p>
+          <p>Node's <code>AsyncLocalStorage</code> is that invisible staple. Middleware generates a UUID (or reuses an incoming <code>x-request-id</code>) at the very start of the request and opens a storage context around everything that follows. Every controller, service, and repository call downstream is still running <em>inside</em> that context — so the logger can read the trace ID back out at any point, without a single function signature anywhere having to accept and pass a <code>traceId</code> parameter. It's also echoed back to the caller as an <code>x-correlation-id</code> response header.</p>
+
+          <figure class="diagram">
+            <svg viewBox="0 0 860 420" role="img" aria-label="AsyncLocalStorage holds a traceId for the lifetime of a request; the middleware, controller, service, repository, and logger all read it from the shared context spine rather than having it passed as a function parameter, and it ends up on both the log line and the response header.">
+              <defs><marker id="a5" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+
+              <rect x="30" y="30" width="34" height="330" rx="3" fill="none" stroke="var(--blue-bright)" stroke-width="1.6"/>
+              <text x="47" y="200" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="var(--blue-bright)" transform="rotate(-90 47 200)">AsyncLocalStorage: { traceId }</text>
+
+              <g font-family="IBM Plex Mono" font-size="11">
+                <rect x="150" y="30" width="300" height="46" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                <text x="300" y="58" text-anchor="middle">CorrelationIdMiddleware — generates id</text>
+                <line x1="300" y1="76" x2="300" y2="106" stroke="currentColor" stroke-width="1.5" marker-end="url(#a5)"/>
+
+                <rect x="150" y="106" width="300" height="46" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                <text x="300" y="134" text-anchor="middle">Controller</text>
+                <line x1="300" y1="152" x2="300" y2="182" stroke="currentColor" stroke-width="1.5" marker-end="url(#a5)"/>
+
+                <rect x="150" y="182" width="300" height="46" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                <text x="300" y="210" text-anchor="middle">Service</text>
+                <line x1="300" y1="228" x2="300" y2="258" stroke="currentColor" stroke-width="1.5" marker-end="url(#a5)"/>
+
+                <rect x="150" y="258" width="300" height="46" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                <text x="300" y="286" text-anchor="middle">Repository / Logger.write()</text>
+              </g>
+
+              <line x1="64" y1="53" x2="150" y2="53" stroke="var(--blue-bright)" stroke-width="1.3" stroke-dasharray="3 3"/>
+              <line x1="64" y1="129" x2="150" y2="129" stroke="var(--blue-bright)" stroke-width="1.3" stroke-dasharray="3 3"/>
+              <line x1="64" y1="205" x2="150" y2="205" stroke="var(--blue-bright)" stroke-width="1.3" stroke-dasharray="3 3"/>
+              <line x1="64" y1="281" x2="150" y2="281" stroke="var(--blue-bright)" stroke-width="1.3" stroke-dasharray="3 3"/>
+              <text x="107" y="358" text-anchor="middle" font-family="IBM Plex Mono" font-size="9.5" fill="var(--blue-bright)">every step reads the</text>
+              <text x="107" y="371" text-anchor="middle" font-family="IBM Plex Mono" font-size="9.5" fill="var(--blue-bright)">same context — no param passed</text>
+
+              <line x1="300" y1="304" x2="300" y2="330" stroke="currentColor" stroke-width="1.5"/>
+              <line x1="300" y1="330" x2="200" y2="330" stroke="currentColor" stroke-width="1.5" marker-end="url(#a5)"/>
+              <line x1="300" y1="330" x2="620" y2="330" stroke="currentColor" stroke-width="1.5" marker-end="url(#a5)"/>
+              <rect x="500" y="356" width="260" height="46" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/>
+              <text x="630" y="378" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5">res header: x-correlation-id</text>
+              <rect x="80" y="356" width="240" height="46" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/>
+              <text x="200" y="378" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5">log line: { traceId, … }</text>
+            </svg>
+            <figcaption>The whole point: grep one trace ID in the log file and get every log line that request touched, across every layer, in order.</figcaption>
+          </figure>
+
+          <div class="spec">
+            <span class="k">Where</span>
+            <div><a href="backend/src/common/middleware/correlation-id.middleware.ts">common/middleware/correlation-id.middleware.ts</a></div>
+            <div><a href="backend/src/common/services/request-context.service.ts">common/services/request-context.service.ts</a> — the AsyncLocalStorage wrapper</div>
+            <div><a href="backend/src/common/configs/logger.config.ts">common/configs/logger.config.ts:12-18</a> — Winston pulling it into every log line</div>
+          </div>
+          <div class="fieldnote"><span class="k">Read next</span><a href="https://nodejs.org/api/async_context.html" target="_blank" rel="noopener">Node.js docs — AsyncLocalStorage</a> · <a href="https://github.com/microsoft/api-guidelines/blob/vNext/azure/Guidelines.md#correlation-ids" target="_blank" rel="noopener">Microsoft REST API Guidelines — Correlation IDs</a></div>
+        </article>
+
+        <!-- 11 -->
+        <article class="card" id="c11">
+          <div class="card-head"><h3>Structured logging + redaction</h3><span class="sheet-tag">11 / 19</span></div>
+          <p class="analogy">A log book kept in a consistent shorthand instead of free-hand prose, so a machine can search it as reliably as a person can read it — with a censor's marker blacking out anything sensitive before the page ever gets filed away.</p>
+          <p>Winston writes JSON lines to daily-rotated files (14 days retained, gzipped), and a custom formatter walks every log object recursively, replacing any key named <code>password</code>, <code>token</code>, <code>secret</code>, <code>authorization</code>, <code>cookie</code>, or <code>otp</code> with <code>[REDACTED]</code> — so a stray <code>console.log</code>-style dump of a request body can't leak a credential into a file that outlives the incident it was written for.</p>
+          <div class="spec">
+            <span class="k">Where</span>
+            <div><a href="backend/src/common/configs/logger.config.ts">common/configs/logger.config.ts</a></div>
+          </div>
+          <div class="fieldnote"><span class="k">Read next</span><a href="https://12factor.net/logs" target="_blank" rel="noopener">The Twelve-Factor App — Logs</a></div>
+        </article>
+
+        <!-- 12 -->
+        <article class="card" id="c12">
+          <div class="card-head"><h3>Request logging interceptor</h3><span class="sheet-tag">12 / 19</span></div>
+          <p class="analogy">The doorman's logbook: who came in, when, how long they stayed, and whether they left through the front door or got escorted out.</p>
+          <p>A NestJS interceptor wraps every handler and logs method, path, status code, IP, user agent, and latency on the way out — success or failure — independent of the file-based Winston transport in sheet 11. It's the fast, always-on pulse check; the daily log files are the deep archive.</p>
+          <div class="spec">
+            <span class="k">Where</span>
+            <div><a href="backend/src/common/interceptors/logging.interceptor.ts">common/interceptors/logging.interceptor.ts</a></div>
+          </div>
+        </article>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- CATEGORY D -->
+      <!-- ============================================================ -->
+      <section class="category" id="cat-d">
+        <div class="category-head"><span class="letter">D</span><h2>API plumbing</h2><span class="count">sheets 13–16</span></div>
+        <div class="ruler"></div>
+        <p class="category-intro">The parts of the API that have nothing to do with tasks, placements, or performance reviews — the shape every response takes no matter which of those it's carrying, so the frontend only has to learn that shape once.</p>
+
+        <!-- 13/14 combined pipeline card -->
+        <article class="card" id="c13">
+          <div class="card-head"><h3>Exception filters → the response envelope</h3><span class="sheet-tag">13–14 / 19</span></div>
+          <p class="analogy">No matter what breaks in the kitchen — wrong order, dropped plate, oven fire — the front desk always hands the customer back the same shaped comment card. The customer never sees the kitchen's chaos, just a consistent, predictable form.</p>
+          <p>Whatever happens inside a handler — a validation error, a permission denial, a database constraint, a Multer file-too-large error, or a plain unexpected exception — a global filter normalizes all of it into one <code>ApiError</code> shape before it leaves the server, hiding stack traces outside development. On the happy path, an interceptor does the mirror-image job: it wraps whatever the handler returned into the same envelope. Either way, the client always receives <code>{ success, statusCode, message, data }</code>, and axios on the frontend unwraps it once, centrally, so every component just sees clean <code>data</code>.</p>
+
+          <figure class="diagram">
+            <svg viewBox="0 0 900 340" role="img" aria-label="Two lanes converge into the same JSON envelope: a successful controller return is wrapped by TransformInterceptor, while any thrown exception is normalized by AllExceptionsFilter into an ApiError; both produce the same success/statusCode/message/data shape, which axios then unwraps for the frontend.">
+              <defs><marker id="a6" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+
+              <rect x="20" y="30" width="220" height="50" rx="2" fill="none" stroke="var(--blue-bright)" stroke-width="1.6"/>
+              <text x="130" y="60" text-anchor="middle" font-family="IBM Plex Mono" font-size="11">Controller returns data</text>
+              <line x1="240" y1="55" x2="330" y2="55" stroke="currentColor" stroke-width="1.5" marker-end="url(#a6)"/>
+              <rect x="330" y="30" width="220" height="50" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <text x="440" y="60" text-anchor="middle" font-family="IBM Plex Mono" font-size="11">TransformInterceptor</text>
+
+              <rect x="20" y="230" width="220" height="50" rx="2" fill="none" stroke="var(--red)" stroke-width="1.6"/>
+              <text x="130" y="253" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5" fill="var(--red)">HttpException / Multer /</text>
+              <text x="130" y="268" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5" fill="var(--red)">DB error / generic Error</text>
+              <line x1="240" y1="255" x2="330" y2="255" stroke="currentColor" stroke-width="1.5" marker-end="url(#a6)"/>
+              <rect x="330" y="230" width="220" height="50" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <text x="440" y="253" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5">AllExceptionsFilter</text>
+              <text x="440" y="268" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5">normalizes → ApiError</text>
+
+              <line x1="550" y1="55" x2="620" y2="55" stroke="currentColor" stroke-width="1.5"/>
+              <line x1="620" y1="55" x2="620" y2="150" stroke="currentColor" stroke-width="1.5"/>
+              <line x1="550" y1="255" x2="620" y2="255" stroke="currentColor" stroke-width="1.5"/>
+              <line x1="620" y1="255" x2="620" y2="150" stroke="currentColor" stroke-width="1.5"/>
+              <line x1="620" y1="150" x2="660" y2="150" stroke="currentColor" stroke-width="1.5" marker-end="url(#a6)"/>
+
+              <rect x="660" y="123" width="220" height="54" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+              <text x="770" y="145" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5">{ success, statusCode,</text>
+              <text x="770" y="160" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5">message, data }</text>
+
+              <text x="770" y="200" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" opacity=".65">↓ HTTP response</text>
+              <text x="770" y="216" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5">axios unwraps response.data.data</text>
+            </svg>
+            <figcaption>The frontend never has to check "is this a success shape or an error shape" — there's only ever one shape.</figcaption>
+          </figure>
+
+          <div class="spec">
+            <span class="k">Where</span>
+            <div><a href="backend/src/common/filters/all-exceptions.filter.ts">common/filters/all-exceptions.filter.ts</a>, <a href="backend/src/common/filters/database-exception.filter.ts">common/filters/database-exception.filter.ts</a></div>
+            <div><a href="backend/src/common/interceptors/transform.interceptor.ts">common/interceptors/transform.interceptor.ts</a></div>
+            <div><a href="backend/src/main.ts">main.ts:52-57</a> — both registered globally</div>
+          </div>
+        </article>
+
+        <!-- 15 -->
+        <article class="card" id="c15">
+          <div class="card-head"><h3>DTO validation pipe</h3><span class="sheet-tag">15 / 19</span></div>
+          <p class="analogy">A bouncer with an actual guest list, not a vibe check. If your name (a field) isn't on the list, you don't get in — and everyone on the list gets their ID checked and converted into the expected format on the way through the door.</p>
+          <p>Every incoming body/query is validated against a DTO class decorated with <code>class-validator</code> rules. <code>whitelist: true</code> strips any field that isn't declared on the DTO; <code>forbidNonWhitelisted: true</code> goes further and rejects the whole request if one shows up; <code>transform: true</code> converts primitives (a query string <code>"5"</code> becomes the number <code>5</code>) before your handler ever sees them.</p>
+          <div class="spec">
+            <span class="k">Where</span>
+            <div><a href="backend/src/main.ts">main.ts:34-43</a></div>
+          </div>
+          <div class="fieldnote"><span class="k">Read next</span><a href="https://docs.nestjs.com/techniques/validation" target="_blank" rel="noopener">NestJS docs — Validation</a></div>
+        </article>
+
+        <!-- 16 -->
+        <article class="card" id="c16">
+          <div class="card-head"><h3>Swagger, Helmet &amp; CORS</h3><span class="sheet-tag">16 / 19</span></div>
+          <p>Three unrelated jobs that every production API needs, bundled here because they're all one-line concerns set up once in <code>main.ts</code>: <strong>Swagger</strong> auto-generates a browsable API directory at <code>/api</code> straight from the DTOs and decorators already in the code, so it can't drift out of date the way a hand-written doc can. <strong>Helmet</strong> sets a batch of security-relevant HTTP response headers by default (the safety signage bolted onto every floor). <strong>CORS</strong> is the policy for which other websites' JavaScript is allowed to call this API from a browser at all — here it's opened wide (<code>origin: true</code>) because the dashboard is served from many tenant subdomains that can't be enumerated as a fixed allow-list.</p>
+          <div class="spec">
+            <span class="k">Where</span>
+            <div><a href="backend/src/main.ts">main.ts:21-31, 60-68</a></div>
+          </div>
+          <div class="fieldnote"><span class="k">Read next</span><a href="https://helmetjs.github.io/" target="_blank" rel="noopener">helmetjs.github.io</a> · <a href="https://swagger.io/docs/specification/about/" target="_blank" rel="noopener">Swagger / OpenAPI — About</a></div>
+        </article>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- CATEGORY E -->
+      <!-- ============================================================ -->
+      <section class="category" id="cat-e">
+        <div class="category-head"><span class="letter">E</span><h2>Storage</h2><span class="count">sheet 17</span></div>
+        <div class="ruler"></div>
+
+        <article class="card" id="c17">
+          <div class="card-head"><h3>Presigned S3 URLs</h3><span class="sheet-tag">17 / 19</span></div>
+          <p class="analogy">Instead of an office clerk personally walking every visitor down to the storage vault and back, they hand the visitor a temporary keycard — good for one specific locker, for one hour — and let the visitor go there directly themselves.</p>
+          <p>Uploads and downloads of private files never stream through the NestJS server's own memory or bandwidth. The backend asks S3 to mint a <em>presigned URL</em>: a normal S3 URL with a cryptographic signature and expiry baked into the query string, proving the holder was authorized by someone who has the real credentials — without those credentials ever leaving the server. The browser then talks to S3 directly. Even the one deliberately unauthenticated upload path (a candidate's exam-registration photo) still re-derives trust from the request's tenant subdomain rather than accepting a raw tenant ID from the client.</p>
+
+          <figure class="diagram">
+            <svg viewBox="0 0 760 320" role="img" aria-label="The client asks the backend for a private file; the backend returns a time-limited presigned URL instead of the file itself; the client then uploads or downloads directly to S3, bypassing the backend entirely for the actual bytes.">
+              <defs><marker id="a7" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+
+              <rect x="290" y="20" width="180" height="54" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+              <text x="380" y="52" text-anchor="middle" font-family="IBM Plex Mono" font-size="11.5">Backend (NestJS)</text>
+
+              <rect x="40" y="230" width="180" height="54" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+              <text x="130" y="262" text-anchor="middle" font-family="IBM Plex Mono" font-size="11.5">Client (browser)</text>
+
+              <rect x="540" y="230" width="180" height="54" rx="2" fill="none" stroke="var(--blue-bright)" stroke-width="1.8"/>
+              <text x="630" y="262" text-anchor="middle" font-family="IBM Plex Mono" font-size="11.5">S3-compatible bucket</text>
+
+              <line x1="200" y1="240" x2="300" y2="74" stroke="currentColor" stroke-width="1.4" marker-end="url(#a7)"/>
+              <text x="205" y="150" font-family="IBM Plex Mono" font-size="10">request private file</text>
+
+              <line x1="330" y1="74" x2="200" y2="252" stroke="currentColor" stroke-width="1.4" marker-end="url(#a7)"/>
+              <text x="270" y="200" font-family="IBM Plex Mono" font-size="10">presigned URL (1h)</text>
+
+              <line x1="220" y1="257" x2="540" y2="257" stroke="var(--blue-bright)" stroke-width="1.8" marker-end="url(#a7)"/>
+              <text x="380" y="248" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5" fill="var(--blue-bright)">GET/PUT directly, with signed URL</text>
+
+              <text x="380" y="115" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" opacity=".65">file bytes never pass through here</text>
+            </svg>
+            <figcaption>The backend's only job is proving the request was authorized — the actual file transfer is between the browser and S3.</figcaption>
+          </figure>
+
+          <div class="spec">
+            <span class="k">Where</span>
+            <div><a href="backend/src/storage/storage.service.ts">storage/storage.service.ts</a></div>
+          </div>
+          <div class="fieldnote"><span class="k">Read next</span><a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/PresignedUrlUploadObject.html" target="_blank" rel="noopener">AWS docs — Uploading objects with presigned URLs</a></div>
+        </article>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- CATEGORY F -->
+      <!-- ============================================================ -->
+      <section class="category" id="cat-f">
+        <div class="category-head"><span class="letter">F</span><h2>Domain pattern</h2><span class="count">sheet 18</span></div>
+        <div class="ruler"></div>
+
+        <article class="card" id="c18">
+          <div class="card-head"><h3>Freeze / lock</h3><span class="sheet-tag">18 / 19</span></div>
+          <p class="analogy">A notarized, sealed document — once stamped, nobody can quietly edit page three later. Reopening it requires someone with actual authority to break the seal on purpose.</p>
+          <p>A generic helper for records that need to become immutable once they're "done" — think a finalized performance review or a closed reconciliation. It supports an explicit manual freeze, and an automatic one that kicks in N days after a record's <code>completedAt</code> date, with unfreezing gated as an admin-only action. It's a small, boring service, but it's the kind of thing that protects audit trails from a well-meaning "oops let me just fix that one number" edit six months later.</p>
+          <div class="spec">
+            <span class="k">Where</span>
+            <div><a href="backend/src/common/freeze/freeze.service.ts">common/freeze/freeze.service.ts</a></div>
+          </div>
+        </article>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- CATEGORY G -->
+      <!-- ============================================================ -->
+      <section class="category" id="cat-g">
+        <div class="category-head"><span class="letter">G</span><h2>Frontend</h2><span class="count">sheet 19</span></div>
+        <div class="ruler"></div>
+
+        <article class="card" id="c19">
+          <div class="card-head"><h3>Axios interceptor chain</h3><span class="sheet-tag">19 / 19</span></div>
+          <p class="analogy">A mailroom clerk who stamps every outgoing envelope with your return address and ID before it leaves the building, and who opens and sanity-checks every incoming reply before it lands on your desk — quietly renewing your ID badge and re-sending anything that bounced for that reason, without ever making you walk down to the mailroom yourself.</p>
+          <p>This is the one piece of the puzzle that lives entirely in the browser, but it's what makes sheets 02, 06, and 14 invisible to the rest of the app. A request interceptor attaches the bearer token and the tenant headers from sheets 01–02 to every outgoing call. A response interceptor unwraps the envelope from sheet 14, and on a 401 runs the refresh flow from sheet 06 — including queuing any requests that failed while a refresh was already in flight, so a page with five simultaneous API calls doesn't trigger five separate refresh attempts.</p>
+          <div class="spec">
+            <span class="k">Where</span>
+            <div><a href="NAVISHR-Dashboard/src/http/httpClient.ts">NAVISHR-Dashboard/src/http/httpClient.ts</a></div>
+          </div>
+          <div class="fieldnote"><span class="k">Read next</span><a href="https://axios-http.com/docs/interceptors" target="_blank" rel="noopener">axios-http.com — Interceptors</a></div>
+        </article>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- READING PATH -->
+      <!-- ============================================================ -->
+      <section class="path" id="path">
+        <span class="eyebrow">Suggested order</span>
+        <h2 style="margin-top:8px; font-size:clamp(22px,3vw,30px);">If you're starting from zero</h2>
+        <p style="color:var(--ink-soft); max-width:70ch; margin-top:10px;">The nineteen sheets are grouped by topic above, but topic order isn't learning order. This is the order that builds on itself with the least backtracking.</p>
+        <ol>
+          <li><b>How one HTTP request becomes a response</b> — skim sheets 13 &amp; 14 first. Everything else in this document is something that happens <em>during</em> that one round trip, so it helps to see the whole trip once before zooming into any one stop.</li>
+          <li><b>Prove who's asking</b> — sheet 06 (JWT). This is the most transferable concept here; it shows up in nearly every modern web app, not just this one.</li>
+          <li><b>Decide what they can do</b> — sheets 07, 08, 09 in order. RBAC first, then the tenant-level module gate stacked on top of it, then the platform-level Super Admin escape hatch.</li>
+          <li><b>Figure out whose data it even is</b> — sheets 01 through 05. This is the most NAVISHR-specific cluster; almost nothing here generalizes to a single-tenant app, so it rewards reading last, once request/auth basics feel familiar.</li>
+          <li><b>Watch it happen after the fact</b> — sheets 10, 11, 12 (tracing and logging), then 17 (storage) and 18 (freeze) as smaller, self-contained side quests.</li>
+          <li><b>Close the loop on the frontend</b> — sheet 19 ties 02, 06, and 14 back together from the browser's side.</li>
+        </ol>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- GENERAL RESOURCES -->
+      <!-- ============================================================ -->
+      <section class="path resources" style="margin-top:24px;">
+        <span class="eyebrow">General references</span>
+        <h2 style="margin-top:8px; font-size:clamp(20px,2.6vw,26px);">Beyond this codebase</h2>
+        <ul>
+          <li><a href="https://docs.nestjs.com/guards" target="_blank" rel="noopener">NestJS docs — Guards</a>, <a href="https://docs.nestjs.com/middleware" target="_blank" rel="noopener">Middleware</a>, and <a href="https://docs.nestjs.com/interceptors" target="_blank" rel="noopener">Interceptors</a> — the three request-pipeline primitives almost everything above is built from.</li>
+          <li><a href="https://microservices.io/patterns/observability/distributed-tracing.html" target="_blank" rel="noopener">microservices.io — Distributed Tracing pattern</a> — the pattern trace IDs are the single-service starting point of.</li>
+          <li><a href="https://docs.aws.amazon.com/wellarchitected/latest/saas-lens/welcome.html" target="_blank" rel="noopener">AWS Well-Architected — SaaS Lens</a> — a much deeper treatment of multi-tenancy trade-offs than this doc attempts.</li>
+          <li><a href="https://owasp.org/www-project-application-security-verification-standard/" target="_blank" rel="noopener">OWASP ASVS</a> — for when "is this access control correct?" needs a checklist, not just intuition.</li>
+        </ul>
+      </section>
+
+      <a class="back-to-top" href="#legend">↑ back to the legend</a>
+      <footer class="colophon">Drawn from backend/src and NAVISHR-Dashboard/src/http as of 2026-08-25 · every file:line reference above is a live link into the repo, not a paraphrase</footer>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

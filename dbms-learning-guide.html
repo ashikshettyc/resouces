@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DBMS Field Guide | NAVIS HR Backend</title>
+  <style>
+    :root {
+      --ink: #17221f;
+      --muted: #66736d;
+      --paper: #f6f2e9;
+      --panel: #fffdf8;
+      --line: #d8d2c4;
+      --teal: #0d766e;
+      --teal-dark: #07534e;
+      --coral: #d96b4d;
+      --gold: #d8a52b;
+      --soft-teal: #dcefeb;
+      --soft-coral: #f8e1d8;
+      --shadow: 0 18px 50px rgba(44, 55, 45, .10);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font: 16px/1.6 Georgia, 'Times New Roman', serif;
+    }
+    button, input { font: inherit; }
+    code, pre, .eyebrow, .tag, .progress, .quiz button { font-family: 'Courier New', monospace; }
+    .hero {
+      background: linear-gradient(135deg, #123d3a 0%, #0c655e 62%, #d96b4d 150%);
+      color: #fffdf8;
+      padding: 58px max(22px, calc((100% - 1180px) / 2)) 48px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero:after {
+      content: 'DB';
+      position: absolute;
+      right: 5%; top: -35px;
+      font: 220px Georgia, serif;
+      color: rgba(255,255,255,.07);
+      transform: rotate(-12deg);
+    }
+    .hero-inner { max-width: 760px; position: relative; z-index: 1; }
+    .eyebrow { letter-spacing: .12em; text-transform: uppercase; color: #b9e4db; font-size: 12px; }
+    h1, h2, h3 { line-height: 1.1; margin: 0 0 14px; font-weight: 700; }
+    h1 { font-size: clamp(40px, 7vw, 78px); max-width: 760px; }
+    h2 { font-size: clamp(28px, 4vw, 42px); }
+    h3 { font-size: 23px; }
+    p { margin: 0 0 14px; }
+    .hero p { color: #e6f4ef; max-width: 670px; font-size: 19px; }
+    .layout { max-width: 1180px; margin: 0 auto; padding: 26px 22px 80px; display: grid; grid-template-columns: 235px 1fr; gap: 34px; }
+    .toc { position: sticky; top: 16px; align-self: start; }
+    .toc-title { font: 700 12px 'Courier New', monospace; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+    .toc a { display: block; color: var(--ink); text-decoration: none; border-left: 3px solid transparent; padding: 7px 10px; }
+    .toc a:hover, .toc a.active { border-color: var(--coral); background: rgba(217,107,77,.1); }
+    .progress { font-size: 11px; color: var(--teal-dark); margin-top: 18px; }
+    main > section { padding: 44px 0; border-bottom: 1px solid var(--line); }
+    .section-kicker { color: var(--coral); font: 700 12px 'Courier New', monospace; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 9px; }
+    .lede { color: var(--muted); font-size: 18px; max-width: 760px; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 22px; }
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 21px; box-shadow: 0 4px 18px rgba(44,55,45,.04); }
+    .card.teal { background: var(--soft-teal); border-color: #add7d0; }
+    .card.coral { background: var(--soft-coral); border-color: #efb9a8; }
+    .tag { display: inline-block; color: var(--teal-dark); background: #c8e6df; padding: 3px 8px; border-radius: 3px; font-size: 11px; margin-bottom: 9px; }
+    .card ul { margin: 8px 0 0; padding-left: 20px; }
+    .flow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 20px 0; }
+    .node { background: var(--teal-dark); color: white; padding: 10px 14px; border-radius: 5px; font-family: 'Courier New', monospace; font-size: 13px; }
+    .arrow { color: var(--coral); font-size: 22px; }
+    pre { background: #17221f; color: #d9eee7; border-radius: 6px; padding: 16px; overflow-x: auto; font-size: 13px; line-height: 1.55; margin: 12px 0 0; }
+    .keyword { color: #f6cf75; }
+    .comment { color: #8db8ac; }
+    .tabs { margin-top: 18px; }
+    .tab-buttons { display: flex; gap: 7px; flex-wrap: wrap; }
+    .tab-buttons button, .quiz button { border: 1px solid var(--teal); background: var(--panel); color: var(--teal-dark); padding: 8px 12px; border-radius: 4px; cursor: pointer; }
+    .tab-buttons button.active, .quiz button:hover { background: var(--teal); color: white; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    details { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; margin: 10px 0; padding: 12px 15px; }
+    summary { cursor: pointer; font-weight: 700; }
+    .acid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 20px; }
+    .acid .card { border-top: 5px solid var(--coral); }
+    .quiz { margin-top: 22px; }
+    .quiz-question { font-weight: 700; margin-bottom: 10px; }
+    .quiz-result { margin-top: 10px; min-height: 26px; font-weight: 700; }
+    .yes { color: var(--teal-dark); }
+    .no { color: #a33e2c; }
+    .callout { border-left: 5px solid var(--gold); background: #fff4cd; padding: 14px 18px; margin: 18px 0; }
+    .source { color: var(--muted); font-size: 13px; margin-top: 12px; }
+    .source a { color: var(--teal-dark); }
+    .checklist label { display: block; margin: 8px 0; }
+    .checklist input { accent-color: var(--teal); margin-right: 8px; }
+    .simulator { margin-top: 20px; }
+    .simulator button { border: 1px solid var(--teal); background: var(--panel); color: var(--teal-dark); padding: 8px 12px; border-radius: 4px; cursor: pointer; margin: 4px 4px 4px 0; }
+    .simulator button:hover { background: var(--teal); color: white; }
+    .state { display: inline-block; min-width: 150px; padding: 8px 12px; border-radius: 4px; background: #e7e1d4; font-family: 'Courier New', monospace; }
+    .state.good { background: #c8e6df; color: var(--teal-dark); }
+    .state.bad { background: var(--soft-coral); color: #8d3929; }
+    .roadmap { counter-reset: roadmap; }
+    .roadmap li { list-style: none; counter-increment: roadmap; margin: 10px 0; padding-left: 34px; position: relative; }
+    .roadmap li:before { content: counter(roadmap); position: absolute; left: 0; top: 0; width: 24px; height: 24px; border-radius: 50%; background: var(--teal); color: white; text-align: center; font: 700 13px/24px 'Courier New', monospace; }
+    .small { font-size: 14px; color: var(--muted); }
+    .lab { position: relative; }
+    .lab-number { color: var(--coral); font: 700 12px 'Courier New', monospace; letter-spacing: .1em; }
+    .lab-task { background: #f0eadc; border-left: 4px solid var(--gold); padding: 12px 15px; margin: 12px 0; }
+    .lab-actions { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
+    .lab-actions button { border: 1px solid var(--teal); background: var(--panel); color: var(--teal-dark); padding: 8px 12px; border-radius: 4px; cursor: pointer; }
+    .lab-actions button:hover, .lab-actions button.done { background: var(--teal); color: white; }
+    .lab-answer { display: none; margin-top: 12px; }
+    .lab-answer.open { display: block; }
+    .lab-status { color: var(--teal-dark); font: 700 12px 'Courier New', monospace; }
+    .lab-score { background: var(--soft-teal); color: var(--teal-dark); padding: 16px 20px; border-radius: 6px; font-weight: 700; }
+    .source-dialog { display: none; position: fixed; inset: 0; z-index: 10; background: rgba(23, 34, 31, .62); padding: 8vh 22px; }
+    .source-dialog.open { display: block; }
+    .source-dialog-panel { max-width: 620px; margin: 0 auto; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 24px; box-shadow: var(--shadow); }
+    .source-dialog-close { float: right; border: 1px solid var(--teal); background: transparent; color: var(--teal-dark); padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+    @media (max-width: 800px) {
+      .layout { display: block; }
+      .toc { position: static; margin-bottom: 20px; display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; }
+      .toc-title, .progress { display: none; }
+      .toc a { white-space: nowrap; border: 1px solid var(--line); border-radius: 4px; }
+      .grid, .acid { grid-template-columns: 1fr; }
+      .hero { padding-top: 40px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">A practical field guide for your project</div>
+      <h1>DBMS, from zero to your backend.</h1>
+      <p>Learn the idea first. Then see the exact table, TypeORM entity, query, or transaction where NAVIS HR uses it. Concepts marked “not yet” are useful next steps, not failures.</p>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="toc" aria-label="Topics">
+      <div class="toc-title">Topics</div>
+      <a href="#map">Start here</a>
+      <a href="#tables">Tables & keys</a>
+      <a href="#relations">Relationships</a>
+      <a href="#normalization">Normalization</a>
+      <a href="#sql">SQL basics</a>
+      <a href="#indexes">Indexes</a>
+      <a href="#design">Design & constraints</a>
+      <a href="#transactions">Transactions</a>
+      <a href="#joins">Joins</a>
+      <a href="#operations">Real-world operations</a>
+      <a href="#labs">Hands-on labs</a>
+      <a href="#missing">Next concepts</a>
+      <div class="progress">READING PATH: <span id="progressText">0%</span></div>
+    </nav>
+
+    <main>
+      <section id="map">
+        <div class="section-kicker">01 / Mental model</div>
+        <h2>What is a DBMS?</h2>
+        <p class="lede">A Database Management System is software that stores, protects, searches, and changes data. PostgreSQL is your DBMS. TypeORM is the application library that helps NestJS talk to PostgreSQL.</p>
+        <div class="flow">
+          <div class="node">NestJS service</div><div class="arrow">-&gt;</div><div class="node">TypeORM</div><div class="arrow">-&gt;</div><div class="node">PostgreSQL</div><div class="arrow">-&gt;</div><div class="node">tables + indexes</div>
+        </div>
+        <div class="grid">
+          <article class="card teal"><span class="tag">In your project</span><h3>Application layer</h3><p>Services such as <code>FeeTemplatesService</code> describe business operations. Repositories turn those operations into SQL.</p></article>
+          <article class="card coral"><span class="tag">The database layer</span><h3>Data guarantees</h3><p>Primary keys, unique constraints, foreign keys, indexes, and transactions protect data even when many requests arrive together.</p></article>
+        </div>
+        <div class="callout"><strong>One sentence to remember:</strong> application code says what the business wants; the DBMS makes storage, lookup, relationships, and consistency reliable.</div>
+      </section>
+
+      <section id="tables">
+        <div class="section-kicker">02 / Structure</div>
+        <h2>Tables, rows, columns, and keys</h2>
+        <p class="lede">A table stores one kind of thing. A row is one instance. A column is one property. A key identifies a row or connects it to another table.</p>
+        <div class="grid">
+          <article class="card"><h3>Primary key</h3><p>A value that uniquely identifies each row. Your entities commonly use generated UUIDs.</p><pre><span class="keyword">id uuid PRIMARY KEY</span></pre><p class="source">Example: <a href="#source-reference" data-source-path="backend/src/tasks/projects/entities/project.entity.ts">Project.id</a></p></article>
+          <article class="card"><h3>Foreign key</h3><p>A column that points to a row in another table. It expresses a relationship and prevents references to missing parents.</p><pre>project_members.projectId -&gt; projects.id</pre><p class="source">Example: <a href="#source-reference" data-source-path="backend/src/tasks/projects/entities/project-member.entity.ts">ProjectMember.project</a></p></article>
+          <article class="card"><h3>Unique constraint</h3><p>Prevents duplicate business values. Your project prevents duplicate project codes within a tenant.</p><pre><span class="keyword">UNIQUE (tenantId, code)</span></pre><p class="source">Example: <a href="#source-reference" data-source-path="backend/src/tasks/projects/entities/project.entity.ts">Project @Unique</a></p></article>
+          <article class="card"><h3>NULL</h3><p>NULL means “unknown or not supplied.” It is not the same as an empty string or zero. Nullable foreign keys are useful for optional relationships.</p><pre>departmentId uuid NULL</pre><p class="source">Example: a user may have no department yet.</p></article>
+        </div>
+        <div class="tabs" data-tabs="keys">
+          <div class="tab-buttons"><button class="active" data-tab="picture">Picture</button><button data-tab="entity">TypeORM</button><button data-tab="sql">SQL idea</button></div>
+          <div id="picture" class="tab-panel active"><div class="flow"><div class="node">projects<br>id = P1</div><div class="arrow">&lt;-</div><div class="node">project_members<br>projectId = P1</div><div class="arrow">-&gt;</div><div class="node">user_info<br>id = U7</div></div></div>
+          <div id="entity" class="tab-panel"><pre>@ManyToOne(() =&gt; Project)<n@JoinColumn({ name: 'projectId' })</nproject: Project;</pre></div>
+          <div id="sql" class="tab-panel"><pre><span class="keyword">FOREIGN KEY</span> (project_id)<br><span class="keyword">REFERENCES</span> projects(id)</pre></div>
+        </div>
+      </section>
+
+      <section id="relations">
+        <div class="section-kicker">03 / Relationships</div>
+        <h2>How tables connect</h2>
+        <p class="lede">Relationships describe how many rows on one side can connect to rows on the other side.</p>
+        <div class="grid">
+          <article class="card"><h3>One-to-one</h3><p>One row matches at most one row. Example: one <code>UserInfo</code> record has one authentication record through <code>authId</code>.</p><div class="flow"><div class="node">user_info</div><div class="arrow">1 : 1</div><div class="node">auth_users</div></div></article>
+          <article class="card"><h3>One-to-many</h3><p>One parent has many children. A project can have many tasks; each task belongs to one project.</p><div class="flow"><div class="node">projects</div><div class="arrow">1 : many</div><div class="node">tasks</div></div></article>
+          <article class="card"><h3>Many-to-many</h3><p>Many users can belong to many projects. A junction table turns this into two one-to-many relationships.</p><div class="flow"><div class="node">users</div><div class="arrow">1 : many</div><div class="node">project_members</div><div class="arrow">many : 1</div><div class="node">projects</div></div></article>
+          <article class="card coral"><h3>Self-reference</h3><p>A table can point back to itself. A task can have a parent task, creating a hierarchy.</p><pre>tasks.parentTaskId -&gt; tasks.id</pre></article>
+        </div>
+        <details><summary>Why not store all project users in one column?</summary><p>That creates repeating data, makes joins harder, and makes uniqueness and foreign-key validation weaker. <code>project_members</code> gives every membership its own row.</p></details>
+      </section>
+
+      <section id="normalization">
+        <div class="section-kicker">04 / Data quality</div>
+        <h2>Normalization</h2>
+        <p class="lede">Normalization is a method for reducing duplicate facts and update bugs. It is not “split every table until it is tiny.” Split data when one fact has its own identity or repeats.</p>
+        <div class="grid">
+          <article class="card"><h3>1NF: atomic values</h3><p>Each cell should hold one value, not a list. <code>project_members</code> follows this. <code>memberIds uuid[]</code> is a deliberate exception.</p></article>
+          <article class="card"><h3>2NF: whole-key dependency</h3><p>Every non-key value must depend on the whole key. Junction tables with a composite uniqueness rule are a common example.</p></article>
+          <article class="card"><h3>3NF: no transitive dependency</h3><p>A non-key column should not depend on another non-key column. Keep department details in <code>departments</code>, not repeated in every user row.</p></article>
+          <article class="card teal"><h3>Your practical verdict</h3><p>Most live entities are roughly 3NF. Arrays, JSONB, and cached totals are denormalization choices. The risk is having two sources of truth, such as project membership arrays plus <code>project_members</code>.</p></article>
+        </div>
+        <div class="quiz" data-answer="b"><div class="quiz-question">Quick check: where should a project's user membership normally live?</div><button data-choice="a">A. A comma-separated string on projects</button> <button data-choice="b">B. One row per membership in project_members</button> <button data-choice="c">C. A copy of the whole user object on projects</button><div class="quiz-result"></div></div>
+      </section>
+
+      <section id="indexes">
+        <div class="section-kicker">05 / Speed</div>
+        <h2>Indexes</h2>
+        <p class="lede">An index is a lookup structure. It makes reads faster by avoiding a full scan, but it consumes space and makes writes slightly more expensive.</p>
+        <div class="grid">
+          <article class="card teal"><h3>B-tree: your default</h3><p>Good for equality, joins, ranges, uniqueness, and sorting.</p><pre>WHERE tenantId = ?<br>ORDER BY createdAt DESC</pre></article>
+          <article class="card"><h3>Composite indexes</h3><p>Column order matters. Because your SaaS queries commonly filter by tenant first, <code>(tenantId, projectId)</code> is sensible.</p><p class="source">Examples: <a href="#source-reference" data-source-path="backend/src/tasks/tasks/entities/task.entity.ts">Task indexes</a></p></article>
+          <article class="card coral"><h3>GIN / trigram: not currently standard</h3><p>Use GIN for JSONB or arrays, and trigram GIN for <code>LIKE '%text%'</code> search. These are next-step indexes, not the default for every column.</p></article>
+          <article class="card"><h3>How to prove an index helps</h3><p>Use PostgreSQL's query plan rather than guessing.</p><pre>EXPLAIN (ANALYZE, BUFFERS)<br>SELECT ...;</pre></article>
+        </div>
+        <details><summary>Index warning: more indexes are not always better</summary><p>Every INSERT, UPDATE, or DELETE may need to update each relevant index. Add an index for a real query pattern, then verify it with a plan.</p></details>
+      </section>
+
+      <section id="sql">
+        <div class="section-kicker">06 / Daily SQL</div>
+        <h2>The SQL you will use constantly</h2>
+        <p class="lede">Most real application work is selecting, filtering, joining, grouping, and safely changing rows. Learn the shape of the query before memorizing every keyword.</p>
+        <div class="tabs" data-tabs="sql-basics">
+          <div class="tab-buttons"><button class="active" data-tab="select">SELECT</button><button data-tab="write">INSERT / UPDATE</button><button data-tab="aggregate">GROUP BY</button><button data-tab="nulls">NULL</button></div>
+          <div id="select" class="tab-panel active"><p><strong>Read:</strong> choose columns, table, then conditions.</p><pre><span class="keyword">SELECT</span> id, title
+<span class="keyword">FROM</span> tasks
+<span class="keyword">WHERE</span> tenant_id = $1
+  <span class="keyword">AND</span> is_deleted = false
+<span class="keyword">ORDER BY</span> created_at <span class="keyword">DESC</span>
+<span class="keyword">LIMIT</span> 20;</pre></div>
+          <div id="write" class="tab-panel"><p><strong>Write:</strong> change only the rows you intend to change.</p><pre><span class="keyword">UPDATE</span> tasks
+<span class="keyword">SET</span> status_id = $1, updated_at = now()
+<span class="keyword">WHERE</span> id = $2
+  <span class="keyword">AND</span> tenant_id = $3;</pre><div class="callout"><strong>Habit:</strong> inspect the <code>WHERE</code> clause before running an update or delete.</div></div>
+          <div id="aggregate" class="tab-panel"><p><strong>Aggregate:</strong> turn many rows into a summary.</p><pre><span class="keyword">SELECT</span> status_id, count(*)
+<span class="keyword">FROM</span> tasks
+<span class="keyword">WHERE</span> tenant_id = $1
+<span class="keyword">GROUP BY</span> status_id;</pre><p class="small"><code>WHERE</code> filters rows before grouping; <code>HAVING</code> filters groups after grouping.</p></div>
+          <div id="nulls" class="tab-panel"><p><strong>NULL:</strong> use <code>IS NULL</code>, not <code>= NULL</code>.</p><pre><span class="keyword">WHERE</span> deleted_at <span class="keyword">IS NULL</span>
+<span class="keyword">WHERE</span> department_id <span class="keyword">IS NOT NULL</span></pre></div>
+        </div>
+        <div class="quiz" data-answer="c"><div class="quiz-question">Which clause protects a multi-tenant update?</div><button data-choice="a">ORDER BY created_at</button> <button data-choice="b">GROUP BY tenant_id</button> <button data-choice="c">WHERE tenant_id = the current tenant</button><div class="quiz-result"></div></div>
+      </section>
+
+      <section id="design">
+        <div class="section-kicker">07 / Design discipline</div>
+        <h2>Constraints, cascades, and data ownership</h2>
+        <p class="lede">Application validation improves user experience. Database constraints are the final guardrail when another code path, script, or concurrent request writes data.</p>
+        <div class="grid">
+          <article class="card"><h3>NOT NULL</h3><p>Use when a fact is required. A booking's exam type should not silently disappear.</p></article>
+          <article class="card"><h3>CHECK</h3><p>Use for values such as non-negative amounts or valid state combinations.</p><pre><span class="keyword">CHECK</span> (amount &gt;= 0)</pre></article>
+          <article class="card"><h3>ON DELETE</h3><p><code>CASCADE</code> removes dependent rows, <code>SET NULL</code> preserves history, and <code>RESTRICT</code> blocks deletion.</p><p class="source">Your project members use cascade when a project is deleted.</p></article>
+          <article class="card teal"><h3>Source of truth</h3><p>Decide where a fact lives. If membership is in <code>project_members</code>, do not independently maintain membership arrays without a clear synchronization rule.</p></article>
+        </div>
+        <div class="simulator card"><h3>Referential integrity simulator</h3><p>What should happen when a project with members is deleted?</p><button data-delete="cascade">CASCADE: delete membership rows</button><button data-delete="restrict">RESTRICT: reject deletion</button><button data-delete="set-null">SET NULL: preserve membership history</button><p><span id="deleteState" class="state">Choose a policy</span></p><p id="deleteExplain" class="small">There is no universally correct option. The business meaning decides.</p></div>
+      </section>
+
+      <section id="transactions">
+        <div class="section-kicker">08 / Safety</div>
+        <h2>Transactions and ACID</h2>
+        <p class="lede">A transaction groups related database changes into one unit. Your services use TypeORM transactions when a business operation writes multiple related rows.</p>
+        <div class="acid">
+          <article class="card"><h3>A</h3><p><strong>Atomicity</strong>: all changes happen, or none happen.</p><p class="source">Strongly used in your code.</p></article>
+          <article class="card"><h3>C</h3><p><strong>Consistency</strong>: constraints and business rules remain valid.</p><p class="source">Supported by constraints plus atomic writes.</p></article>
+          <article class="card"><h3>I</h3><p><strong>Isolation</strong>: concurrent work should not interfere incorrectly.</p><p class="source">Mostly default PostgreSQL behavior.</p></article>
+          <article class="card"><h3>D</h3><p><strong>Durability</strong>: committed data survives a crash.</p><p class="source">Provided by PostgreSQL after commit.</p></article>
+        </div>
+        <div class="card teal" style="margin-top:16px"><h3>Real example: question tree</h3><p>Create/update can touch the question, options, answers, and child questions. The QueryRunner commits only after all work succeeds.</p><pre>startTransaction()<br>save question + children + options<br>commitTransaction()<br>rollbackTransaction() on error</pre><p class="source"><a href="#source-reference" data-source-path="backend/src/assessment/questions/questions.service.ts">Open questions.service.ts</a></p></div>
+        <div class="callout"><strong>Gap to remember:</strong> exam booking result update and candidate Japanese-level update happen as separate saves in the live code. If they must never diverge, they belong in one transaction.</div>
+      </section>
+
+      <section id="joins">
+        <div class="section-kicker">09 / Reading data</div>
+        <h2>Joins</h2>
+        <p class="lede">A join combines rows from related tables. The join type answers: should rows without a match still appear?</p>
+        <div class="grid">
+          <article class="card"><h3>INNER JOIN</h3><p>Only matching rows. Your candidate ownership check uses this because a candidate must have a tenant-owned batch.</p><pre>candidate INNER JOIN batch<br>WHERE batch.tenantId = ?</pre></article>
+          <article class="card"><h3>LEFT JOIN</h3><p>Keep every row from the left table, even when the right side is missing. Useful when listing achievements that may not have a related target.</p></article>
+          <article class="card"><h3>RIGHT JOIN</h3><p>Keep every row from the right table. It is valid SQL but rarely needed because the same query is usually clearer with the table order reversed.</p></article>
+          <article class="card coral"><h3>JOIN warning</h3><p>Joining a one-to-many relation can duplicate parent rows. Use grouping, distinct selection, or load the relation intentionally.</p></article>
+        </div>
+        <pre><span class="keyword">SELECT</span> candidate.*
+<span class="keyword">FROM</span> candidate_profiles candidate
+<span class="keyword">INNER JOIN</span> batches batch <span class="keyword">ON</span> batch.id = candidate.batch_id
+<span class="keyword">WHERE</span> candidate.id = $1 <span class="keyword">AND</span> batch.tenant_id = $2;</pre>
+        <p class="source">Application example: <a href="#source-reference" data-source-path="backend/src/placement/candidates/candidate-access.service.ts">candidate-access.service.ts</a></p>
+      </section>
+
+      <section id="operations">
+        <div class="section-kicker">10 / Production thinking</div>
+        <h2>Concurrency, security, and reliability</h2>
+        <p class="lede">A database is used by many requests at once and must survive mistakes, crashes, and growth. These concepts turn “it works locally” into dependable software.</p>
+        <div class="grid">
+          <article class="card"><h3>Concurrency</h3><p>Two requests can read the same value and both try to change it. Transactions, locks, unique constraints, and optimistic version checks prevent lost updates.</p></article>
+          <article class="card"><h3>Isolation levels</h3><p>PostgreSQL commonly starts at Read Committed. Stronger isolation reduces anomalies but can increase retries and conflicts.</p></article>
+          <article class="card coral"><h3>Security</h3><p>Use least-privilege database roles, parameterized queries, secret management, and tenant enforcement. TypeORM parameters help prevent SQL injection; authorization still belongs in the application/database policy.</p></article>
+          <article class="card"><h3>Reliability</h3><p>Backups, restore drills, migrations, monitoring, slow-query logs, and connection-pool limits matter as much as table design.</p></article>
+        </div>
+        <div class="simulator card"><h3>Lost update simulator</h3><p>Two admins edit the same task title. See why a version check matters.</p><p>Database value: <span id="taskValue" class="state">Draft</span> &nbsp; Version: <span id="taskVersion" class="state">1</span></p><button id="adminA">Admin A saves</button><button id="adminB">Admin B saves</button><button id="resetTask">Reset</button><p id="concurrencyExplain" class="small">Both admins read version 1. A safe update accepts only the first update of version 1.</p></div>
+        <div class="card teal" style="margin-top:16px"><h3>Tenant isolation in this backend</h3><p>Many services filter by <code>tenantId</code>, and <code>TenantScopedRepository</code> forces it for common repository methods. PostgreSQL Row-Level Security is the stronger database-level concept to learn next.</p></div>
+      </section>
+
+      <section id="labs">
+        <div class="section-kicker">11 / Learn by doing</div>
+        <h2>Hands-on DBMS labs</h2>
+        <p class="lede">Attempt each task before revealing the review points. Mark a lab complete only after you can explain the failure mode, fix, tradeoff, and verification method.</p>
+        <div class="lab-score"><span id="labScore">0 / 8 labs complete</span> <span class="small">Progress is saved in this browser.</span></div>
+        <div class="grid">
+          <article class="card lab"><div class="lab-number">LAB 01 / MODEL</div><h3>Design project membership</h3><p>Users can join many projects, and projects can contain many users.</p><div class="lab-task"><strong>Task:</strong> Draw the tables, keys, and duplicate-prevention rule.</div><details><summary>Hint</summary><p>Use a junction table. The membership is its own fact.</p></details><div class="lab-actions"><button data-reveal="answer-1">Reveal review</button><button data-complete="1">Mark complete</button><span class="lab-status" data-status="1"></span></div><div id="answer-1" class="lab-answer"><pre>projects(id)<br>user_info(id)<br>project_members(projectId, userId)<br>UNIQUE (tenantId, projectId, userId)</pre><p>This is the live pattern in <code>ProjectMember</code>.</p></div></article>
+          <article class="card lab"><div class="lab-number">LAB 02 / SQL</div><h3>Write a tenant-safe list</h3><p>List the newest active tasks for one tenant, showing only 20 rows.</p><div class="lab-task"><strong>Task:</strong> Write the filters, ordering, and limit.</div><details><summary>Hint</summary><p>The tenant condition is part of correctness, not just performance.</p></details><div class="lab-actions"><button data-reveal="answer-2">Reveal review</button><button data-complete="2">Mark complete</button><span class="lab-status" data-status="2"></span></div><div id="answer-2" class="lab-answer"><pre><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> tasks<br><span class="keyword">WHERE</span> tenant_id = $1 <span class="keyword">AND</span> is_deleted = false<br><span class="keyword">ORDER BY</span> created_at <span class="keyword">DESC</span><br><span class="keyword">LIMIT</span> 20;</pre></div></article>
+          <article class="card lab"><div class="lab-number">LAB 03 / INDEX</div><h3>Choose the index</h3><p>Optimize the task query from Lab 02.</p><div class="lab-task"><strong>Task:</strong> Choose between <code>(projectId)</code>, <code>(tenantId, createdAt DESC)</code>, or GIN. Explain why.</div><details><summary>Hint</summary><p>Match equality filters and sorting. GIN is for different data shapes.</p></details><div class="lab-actions"><button data-reveal="answer-3">Reveal review</button><button data-complete="3">Mark complete</button><span class="lab-status" data-status="3"></span></div><div id="answer-3" class="lab-answer"><p><code>(tenantId, createdAt DESC)</code> fits this query best. Verify with <code>EXPLAIN (ANALYZE, BUFFERS)</code>.</p></div></article>
+          <article class="card lab"><div class="lab-number">LAB 04 / TRANSACTION</div><h3>Make payment atomic</h3><p>A payment creates a record and updates the candidate account total/status.</p><div class="lab-task"><strong>Task:</strong> Decide which writes belong in one transaction.</div><details><summary>Hint</summary><p>The summary must not say “paid” if the payment record was not saved.</p></details><div class="lab-actions"><button data-reveal="answer-4">Reveal review</button><button data-complete="4">Mark complete</button><span class="lab-status" data-status="4"></span></div><div id="answer-4" class="lab-answer"><p>Insert payment and update the summary in one transaction. Commit together or roll back together. This protects atomicity and consistency.</p></div></article>
+          <article class="card lab"><div class="lab-number">LAB 05 / JOIN</div><h3>Choose the join</h3><p>List every achievement, including one without a target.</p><div class="lab-task"><strong>Task:</strong> Choose <code>INNER JOIN</code> or <code>LEFT JOIN</code>.</div><details><summary>Hint</summary><p>The achievement row must survive when the optional target is absent.</p></details><div class="lab-actions"><button data-reveal="answer-5">Reveal review</button><button data-complete="5">Mark complete</button><span class="lab-status" data-status="5"></span></div><div id="answer-5" class="lab-answer"><p>Use <code>LEFT JOIN</code>. Achievements are the preserved left-side rows.</p></div></article>
+          <article class="card lab"><div class="lab-number">LAB 06 / CONCURRENCY</div><h3>Prevent a lost update</h3><p>Two admins load and edit the same task title.</p><div class="lab-task"><strong>Task:</strong> Choose optimistic locking or a row lock and state the tradeoff.</div><details><summary>Hint</summary><p>Optimistic locking fits uncommon conflicts and avoids holding a lock while a user edits.</p></details><div class="lab-actions"><button data-reveal="answer-6">Reveal review</button><button data-complete="6">Mark complete</button><span class="lab-status" data-status="6"></span></div><div id="answer-6" class="lab-answer"><p>Use <code>WHERE id = $1 AND version = $2</code>. Zero updated rows means a conflict. Use row locks for short, high-contention critical sections.</p></div></article>
+          <article class="card lab"><div class="lab-number">LAB 07 / MIGRATION</div><h3>Ship a required column</h3><p>Add <code>tenant_id NOT NULL</code> to a table with existing production rows.</p><div class="lab-task"><strong>Task:</strong> Write a safe rollout sequence.</div><details><summary>Hint</summary><p>Do not enforce <code>NOT NULL</code> before every row has a value.</p></details><div class="lab-actions"><button data-reveal="answer-7">Reveal review</button><button data-complete="7">Mark complete</button><span class="lab-status" data-status="7"></span></div><div id="answer-7" class="lab-answer"><p>Add nullable, deploy writers, backfill, validate, then enforce <code>NOT NULL</code>. Test up and down migrations.</p></div></article>
+          <article class="card lab"><div class="lab-number">LAB 08 / INCIDENT</div><h3>Investigate a slow endpoint</h3><p>A task endpoint grows from 100 ms to 4 seconds.</p><div class="lab-task"><strong>Task:</strong> Name your first five investigation steps before adding an index.</div><details><summary>Hint</summary><p>Measure the actual SQL, plan, row counts, joins, and recent changes.</p></details><div class="lab-actions"><button data-reveal="answer-8">Reveal review</button><button data-complete="8">Mark complete</button><span class="lab-status" data-status="8"></span></div><div id="answer-8" class="lab-answer"><p>Capture SQL and parameters, run <code>EXPLAIN (ANALYZE, BUFFERS)</code>, inspect scans/selectivity/joins, check N+1 behavior, then test a change with realistic data.</p></div></article>
+        </div>
+        <div class="callout"><strong>Senior habit:</strong> a lab is complete when you can defend the decision and explain how you would verify it in production.</div>
+      </section>
+
+      <section id="missing">
+        <div class="section-kicker">12 / The focused 20%</div>
+        <h2>Specialist topics for specific situations</h2>
+        <p class="lede">Do not start here. These concepts matter when traffic, data size, compliance, or architecture demands them.</p>
+        <div class="grid">
+          <article class="card"><h3>Views and materialized views</h3><p>Saved query definitions; materialized views store a refreshable result for reporting.</p></article>
+          <article class="card"><h3>Stored functions and triggers</h3><p>Logic inside PostgreSQL. Powerful for universal rules, but hidden side effects can make application behavior harder to trace.</p></article>
+          <article class="card"><h3>Partitioning</h3><p>Split one logical table into physical pieces, often by date or tenant, when tables become very large.</p></article>
+          <article class="card"><h3>Replication and read replicas</h3><p>Copy data to other servers for availability or read scale. Replicas may lag behind the primary.</p></article>
+          <article class="card"><h3>Sharding</h3><p>Distribute data across independent database nodes. It adds routing and operational complexity; do it only when one database cannot scale.</p></article>
+          <article class="card"><h3>OLTP versus OLAP</h3><p>OLTP handles small, concurrent business writes. OLAP handles large analytical scans. Reporting often deserves a separate model.</p></article>
+          <article class="card"><h3>Full-text and vector search</h3><p>PostgreSQL can support text search and extensions. Use them for search workloads, not as a replacement for normal relational predicates.</p></article>
+          <article class="card"><h3>Distributed systems</h3><p>Eventual consistency, idempotency, queues, outbox patterns, and sagas appear when one transaction cannot cover multiple services.</p></article>
+        </div>
+        <h3 style="margin-top:26px">A practical learning order</h3>
+        <ol class="roadmap">
+          <li><strong>Foundation:</strong> rows, keys, constraints, relationships, normalization, and basic SQL.</li>
+          <li><strong>Daily engineering:</strong> joins, indexes, transactions, pagination, validation, and migrations.</li>
+          <li><strong>Production:</strong> concurrency, tenant security, backups, monitoring, query plans, and failure recovery.</li>
+          <li><strong>Specialist:</strong> replication, partitioning, sharding, analytical models, and distributed consistency.</li>
+        </ol>
+        <div class="checklist">
+          <label><input type="checkbox"> <strong>Row-Level Security:</strong> PostgreSQL-enforced tenant isolation, instead of relying only on every service remembering <code>tenantId</code>.</label>
+          <label><input type="checkbox"> <strong>CHECK constraints:</strong> database rules for valid statuses, amounts, and mutually exclusive fields.</label>
+          <label><input type="checkbox"> <strong>Explicit isolation:</strong> isolation levels and row locks for high-contention workflows.</label>
+          <label><input type="checkbox"> <strong>Query plans:</strong> use <code>EXPLAIN ANALYZE</code> to prove index choices.</label>
+          <label><input type="checkbox"> <strong>Migration discipline:</strong> production migrations rather than relying on TypeORM synchronization.</label>
+          <label><input type="checkbox"> <strong>Optimistic locking:</strong> version columns to detect two users editing the same row.</label>
+        </div>
+        <div class="card teal" style="margin-top:22px"><h3>Interview answer template</h3><p>“Our live NestJS backend uses PostgreSQL through TypeORM. The core entities are mostly normalized, with a few intentional denormalizations such as JSONB, arrays, and cached totals. We use B-tree indexes for tenant filters, joins, uniqueness, and ordering. TypeORM transactions mainly protect atomicity when one operation writes several related rows. Our join choice depends on whether unmatched rows should be retained.”</p></div>
+      </section>
+    </main>
+  </div>
+
+  <div id="source-reference" class="source-dialog" role="dialog" aria-modal="true" aria-labelledby="source-dialog-title">
+    <div class="source-dialog-panel">
+      <button class="source-dialog-close" id="closeSourceDialog" type="button">Close</button>
+      <div class="section-kicker">Live backend reference</div>
+      <h2 id="source-dialog-title">Source file</h2>
+      <p>This guide is opened as a local HTML file. Browsers download TypeScript files instead of displaying them, so the source path is shown here without starting a download.</p>
+      <pre id="sourcePath">Select an example link.</pre>
+      <p class="small">Open this path in VS Code from the workspace: <strong>c:\pms\</strong></p>
+    </div>
+  </div>
+
+  <script>
+    document.querySelectorAll('[data-tabs]').forEach(function (tabs) {
+      var buttons = tabs.querySelectorAll('[data-tab]');
+      var panels = tabs.querySelectorAll('.tab-panel');
+      buttons.forEach(function (button) {
+        button.addEventListener('click', function () {
+          buttons.forEach(function (item) { item.classList.remove('active'); });
+          panels.forEach(function (panel) { panel.classList.remove('active'); });
+          button.classList.add('active');
+          tabs.querySelector('#' + button.dataset.tab).classList.add('active');
+        });
+      });
+    });
+    var sourceDialog = document.getElementById('source-reference');
+    var sourcePath = document.getElementById('sourcePath');
+    document.querySelectorAll('[data-source-path]').forEach(function (link) {
+      link.addEventListener('click', function (event) {
+        event.preventDefault();
+        sourcePath.textContent = link.dataset.sourcePath;
+        sourceDialog.classList.add('open');
+      });
+    });
+    document.getElementById('closeSourceDialog').addEventListener('click', function () {
+      sourceDialog.classList.remove('open');
+    });
+    sourceDialog.addEventListener('click', function (event) {
+      if (event.target === sourceDialog) sourceDialog.classList.remove('open');
+    });
+    document.querySelectorAll('.quiz').forEach(function (quiz) {
+      var result = quiz.querySelector('.quiz-result');
+      quiz.querySelectorAll('[data-choice]').forEach(function (button) {
+        button.addEventListener('click', function () {
+          var correct = button.dataset.choice === quiz.dataset.answer;
+          result.textContent = correct ? 'Correct. A membership is a relationship row.' : 'Try again. Keep one membership fact per row.';
+          result.className = 'quiz-result ' + (correct ? 'yes' : 'no');
+        });
+      });
+    });
+    document.querySelectorAll('[data-delete]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        var state = document.getElementById('deleteState');
+        var explain = document.getElementById('deleteExplain');
+        var policy = button.dataset.delete;
+        state.className = 'state ' + (policy === 'restrict' ? 'bad' : 'good');
+        state.textContent = policy.toUpperCase();
+        explain.textContent = policy === 'cascade'
+          ? 'The parent and dependent membership rows disappear together. Good for disposable child data.'
+          : policy === 'restrict'
+            ? 'The database refuses the delete until dependencies are handled. Good when deletion could destroy important history.'
+            : 'The parent is deleted but the child remains with no parent reference. Good only when the child history still has meaning.';
+      });
+    });
+    var completedLabs = JSON.parse(localStorage.getItem('dbmsCompletedLabs') || '[]');
+    function refreshLabProgress() {
+      document.getElementById('labScore').textContent = completedLabs.length + ' / 8 labs complete';
+      document.querySelectorAll('[data-status]').forEach(function (status) {
+        var lab = status.dataset.status;
+        if (completedLabs.includes(lab)) {
+          status.textContent = 'COMPLETE';
+          status.className = 'lab-status yes';
+          status.previousElementSibling.classList.add('done');
+        }
+      });
+    }
+    document.querySelectorAll('[data-reveal]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        document.getElementById(button.dataset.reveal).classList.toggle('open');
+      });
+    });
+    document.querySelectorAll('[data-complete]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        var lab = button.dataset.complete;
+        if (!completedLabs.includes(lab)) completedLabs.push(lab);
+        localStorage.setItem('dbmsCompletedLabs', JSON.stringify(completedLabs));
+        refreshLabProgress();
+      });
+    });
+    refreshLabProgress();
+    var taskValue = document.getElementById('taskValue');
+    var taskVersion = document.getElementById('taskVersion');
+    var concurrencyExplain = document.getElementById('concurrencyExplain');
+    var taskVersionNumber = 1;
+    var taskSaved = false;
+    function saveTask(admin) {
+      if (taskSaved) {
+        concurrencyExplain.textContent = admin + ' read version 1, but the database is now version ' + taskVersionNumber + '. A version check rejects this stale update.';
+        concurrencyExplain.className = 'small no';
+        return;
+      }
+      taskSaved = true;
+      taskVersionNumber += 1;
+      taskValue.textContent = admin + ' title';
+      taskVersion.textContent = taskVersionNumber;
+      concurrencyExplain.textContent = admin + ' successfully updated version 1 to version ' + taskVersionNumber + '. The other stale writer must retry or show a conflict.';
+      concurrencyExplain.className = 'small yes';
+    }
+    document.getElementById('adminA').addEventListener('click', function () { saveTask('Admin A'); });
+    document.getElementById('adminB').addEventListener('click', function () { saveTask('Admin B'); });
+    document.getElementById('resetTask').addEventListener('click', function () {
+      taskSaved = false;
+      taskVersionNumber = 1;
+      taskValue.textContent = 'Draft';
+      taskVersion.textContent = '1';
+      concurrencyExplain.textContent = 'Both admins read version 1. A safe update accepts only the first update of version 1.';
+      concurrencyExplain.className = 'small';
+    });
+    var sections = document.querySelectorAll('main > section');
+    var progressText = document.getElementById('progressText');
+    function updateProgress() {
+      var seen = 0;
+      sections.forEach(function (section) { if (window.scrollY + 260 >= section.offsetTop) seen += 1; });
+      progressText.textContent = Math.round((seen / sections.length) * 100) + '%';
+    }
+    window.addEventListener('scroll', updateProgress, { passive: true });
+    updateProgress();
+  </script>
+</body>
+</html>
