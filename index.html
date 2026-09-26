@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Learning Resources</title>
+    <style>
+      :root {
+        --bg: #f4f7fb;
+        --panel: #ffffff;
+        --text: #16202b;
+        --muted: #536579;
+        --line: #dfeaf5;
+        --accent: #1e5aa8;
+        --accent-2: #0d3d7a;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background: linear-gradient(180deg, #eef4ff 0%, var(--bg) 100%);
+        color: var(--text);
+      }
+
+      .container {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 60px 20px 80px;
+      }
+
+      h1 {
+        margin: 0 0 18px;
+        font-size: clamp(2.2rem, 5vw, 4rem);
+        line-height: 1.1;
+      }
+
+      .subtitle {
+        color: var(--muted);
+        font-size: 1.08rem;
+        margin-bottom: 34px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 20px;
+      }
+
+      .card {
+        display: block;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-left: 5px solid var(--accent);
+        border-radius: 14px;
+        padding: 22px 20px;
+        text-decoration: none;
+        color: var(--text);
+        box-shadow: 0 10px 24px rgba(22, 32, 43, 0.06);
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+      }
+
+      .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 16px 30px rgba(22, 32, 43, 0.09);
+      }
+
+      .tag {
+        display: inline-block;
+        margin-bottom: 10px;
+        padding: 6px 10px;
+        background: #edf4ff;
+        color: var(--accent-2);
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .card h2 {
+        margin: 0 0 10px;
+        font-size: 1.5rem;
+      }
+
+      .card p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="container">
+      <h1>Resource Hub</h1>
+      <p class="subtitle">Choose a page below to open the guide or blueprint you want.</p>
+
+      <section class="grid">
+        <a class="card" href="navishr-blueprint.html">
+          <span class="tag">Blueprint</span>
+          <h2>NAVISHR Blueprint</h2>
+          <p>Open the main strategy and roadmap page for the project.</p>
+        </a>
+
+        <a class="card" href="backend-learning-guide.html">
+          <span class="tag">Guide</span>
+          <h2>Backend Learning Guide</h2>
+          <p>Explore the backend learning roadmap and progression path.</p>
+        </a>
+
+        <a class="card" href="dbms-learning-guide.html">
+          <span class="tag">Guide</span>
+          <h2>DBMS Learning Guide</h2>
+          <p>Review the database systems learning material and study flow.</p>
+        </a>
+      </section>
+    </main>
+  </body>
+</html>
